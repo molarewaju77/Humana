@@ -9,14 +9,14 @@ interface FormSectionProps {
 
 export default function FormSection({ title, description, children, className }: FormSectionProps) {
   return (
-    <fieldset className={cn('border-0 p-0 m-0', className)}>
-      <legend className="w-full mb-6">
-        <h2 className="text-xl font-semibold text-brand-deeptext">{title}</h2>
+    <div className={cn('pt-8 first:pt-0 border-t border-brand-border/70 first:border-0', className)}>
+      <div className="mb-5">
+        <h2 className="text-base font-semibold text-brand-deeptext tracking-tight">{title}</h2>
         {description && (
-          <p className="text-sm text-brand-secondarytext mt-1.5 leading-relaxed">{description}</p>
+          <p className="text-xs text-brand-secondarytext mt-1 leading-relaxed">{description}</p>
         )}
-      </legend>
+      </div>
       <div className="space-y-5">{children}</div>
-    </fieldset>
+    </div>
   )
 }

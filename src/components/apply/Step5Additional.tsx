@@ -86,7 +86,7 @@ export default function Step5Additional({ defaultValues, onNext, onBack }: Props
   const has401k = watch('has401k')
 
   return (
-    <form onSubmit={handleSubmit((data) => onNext(data as AdditionalInfoData))} noValidate>
+    <form onSubmit={handleSubmit((data) => onNext(data as AdditionalInfoData))} noValidate className="space-y-8">
 
       {/* ── Financial Background ── */}
       <FormSection

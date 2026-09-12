@@ -83,7 +83,7 @@ export default function Step4Preferences({ defaultValues, onNext, onBack }: Prop
   const tenure = watch('tenureIntent') || ''
 
   return (
-    <form onSubmit={handleSubmit(onNext)} noValidate>
+    <form onSubmit={handleSubmit(onNext)} noValidate className="space-y-8">
       {/* ── Employment Preferences ── */}
       <FormSection
         title="Work Preferences"

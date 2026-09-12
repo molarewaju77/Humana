@@ -93,7 +93,7 @@ export default function Step1Personal({ defaultValues, onNext }: Props) {
   const selfIntro = watch('selfIntroduction') || ''
 
   return (
-    <form onSubmit={handleSubmit(onNext)} noValidate>
+    <form onSubmit={handleSubmit(onNext)} noValidate className="space-y-8">
       {/* ── Identity ── */}
       <FormSection
         title="Personal Information"
@@ -158,7 +158,7 @@ export default function Step1Personal({ defaultValues, onNext }: Props) {
             id="selfIntroduction"
             rows={4}
             placeholder="e.g. My name is Jane Smith. I am 32 years old, female, and currently located in Austin, Texas…"
-            className="input-base w-full resize-none"
+            className="field-input w-full resize-none min-h-[110px] leading-relaxed"
             {...register('selfIntroduction')}
           />
           <div className="flex justify-between mt-1">

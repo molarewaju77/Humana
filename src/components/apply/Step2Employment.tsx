@@ -37,7 +37,7 @@ export default function Step2Employment({ defaultValues, onNext, onBack }: Props
   const whyRight = watch('whyRightCandidate') || ''
 
   return (
-    <form onSubmit={handleSubmit(onNext)} noValidate>
+    <form onSubmit={handleSubmit(onNext)} noValidate className="space-y-8">
       <FormSection
         title="Employment History"
         description="Tell us about your previous work experience and how you've developed professionally."

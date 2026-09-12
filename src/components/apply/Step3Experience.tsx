@@ -85,7 +85,7 @@ export default function Step3Experience({ defaultValues, onNext, onBack }: Props
   const proudAch = watch('proudAchievement') || ''
 
   return (
-    <form onSubmit={handleSubmit(onNext)} noValidate>
+    <form onSubmit={handleSubmit(onNext)} noValidate className="space-y-8">
       {/* ── Professional Background ── */}
       <FormSection
         title="Experience & Skills"
@@ -132,7 +132,6 @@ export default function Step3Experience({ defaultValues, onNext, onBack }: Props
       </FormSection>
 
       {/* ── Equipment & Technical Requirements ── */}
-      <div className="mt-6">
       <FormSection
         title="Equipment & Technical Requirements"
         description="Confirm whether you have the required tools to perform this role effectively."
@@ -162,7 +161,6 @@ export default function Step3Experience({ defaultValues, onNext, onBack }: Props
           required
         />
       </FormSection>
-      </div>
 
       {/* ── Documents ── */}
       <FormSection
