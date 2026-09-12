@@ -1,4 +1,4 @@
-import { useForm, Controller, useWatch } from 'react-hook-form'
+import { useForm, Controller, useWatch, type UseFormRegister } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { additionalInfoSchema, type AdditionalInfoData } from '../../lib/validators'
@@ -26,7 +26,7 @@ function RadioGroup({
   label: string
   name: string
   options: { value: string; label: string }[]
-  register: ReturnType<typeof useForm>['register']
+  register: UseFormRegister<any>
   error?: string
   required?: boolean
   helper?: string
