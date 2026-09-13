@@ -6,8 +6,9 @@ import Button from '../ui/Button'
 import humanaLogo from '../../assets/humana.png'
 
 const navLinks = [
-  { label: 'Careers', href: '/#opportunities' },
-  { label: 'About', href: '/#about' },
+  { label: 'Home', href: '/' },
+  { label: 'Benefits', href: '/benefits' },
+  { label: 'About', href: '/about' },
   { label: 'Opportunities', href: '/#opportunities' },
 ]
 
@@ -55,15 +56,29 @@ export default function SiteHeader() {
 
           {/* Desktop nav */}
           <nav aria-label="Main navigation" className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="nav-link text-sm font-medium"
-              >
-                {link.label}
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              const isInternalRoute = link.href.startsWith('/') && !link.href.includes('#')
+              return isInternalRoute ? (
+                <Link
+                  key={link.label}
+                  to={link.href}
+                  className={cn(
+                    'nav-link text-sm font-medium transition-colors',
+                    pathname === link.href ? 'text-primary font-bold' : 'text-brand-secondarytext hover:text-brand-deeptext',
+                  )}
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="nav-link text-sm font-medium text-brand-secondarytext hover:text-brand-deeptext transition-colors"
+                >
+                  {link.label}
+                </a>
+              )
+            })}
           </nav>
 
           {/* Desktop CTA */}
@@ -97,16 +112,33 @@ export default function SiteHeader() {
         aria-hidden={!menuOpen}
       >
         <nav className="px-5 py-4 flex flex-col gap-1">
-          {navLinks.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              className="py-2.5 px-3 text-sm font-medium text-brand-secondarytext hover:text-brand-deeptext hover:bg-muted rounded-lg transition-colors"
-              onClick={() => setMenuOpen(false)}
-            >
-              {link.label}
-            </a>
-          ))}
+          {navLinks
+            .filter((link) => link.label !== 'Opportunities')
+            .map((link) => {
+            const isInternalRoute = link.href.startsWith('/') && !link.href.includes('#')
+            return isInternalRoute ? (
+              <Link
+                key={link.label}
+                to={link.href}
+                className={cn(
+                  'py-2.5 px-3 text-sm font-medium rounded-lg transition-colors',
+                  pathname === link.href ? 'text-primary bg-primary/10 font-bold' : 'text-brand-secondarytext hover:text-brand-deeptext hover:bg-muted',
+                )}
+                onClick={() => setMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ) : (
+              <a
+                key={link.label}
+                href={link.href}
+                className="py-2.5 px-3 text-sm font-medium text-brand-secondarytext hover:text-brand-deeptext hover:bg-muted rounded-lg transition-colors"
+                onClick={() => setMenuOpen(false)}
+              >
+                {link.label}
+              </a>
+            )
+          })}
           <div className="pt-3 mt-2 border-t border-brand-border">
             <Link to="/apply" className="block">
               <Button variant="primary" size="md" className="w-full">

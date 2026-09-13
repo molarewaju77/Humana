@@ -14,34 +14,37 @@ import {
   Sparkles,
   Clock,
   Award,
+  Landmark,
+  HeartPulse,
+  GraduationCap,
 } from "lucide-react";
 import Button from "../components/ui/Button";
 import heroHealthcare from "../assets/hero_healthcare.jpg";
 
 const trustFeatures = [
   {
-    icon: Heart,
-    title: "Meaningful Work",
+    icon: Landmark,
+    title: "Industry-Leading 401(k) Match",
     description:
-      "Contribute to work that positively impacts people's lives and communities every day.",
+      "Dollar-for-dollar company 401(k) match up to 6% with immediate vesting and professional retirement planning guidance.",
   },
   {
-    icon: TrendingUp,
-    title: "Professional Growth",
+    icon: HeartPulse,
+    title: "Comprehensive Health & Well-being",
     description:
-      "Develop your skills through continuous learning and structured professional opportunities.",
+      "Day-one medical, dental, and vision coverage, prescription plans, and personalized employee wellness incentives.",
   },
   {
-    icon: Users,
-    title: "Collaborative Teams",
+    icon: GraduationCap,
+    title: "Tuition Assistance & Growth",
     description:
-      "Work alongside people who value collaboration, mutual respect, and inclusion.",
+      "Up to 100% tuition reimbursement, specialized healthcare certifications, and structured career progression pathways.",
   },
   {
-    icon: Globe,
-    title: "Flexible Opportunities",
+    icon: Clock,
+    title: "Generous PTO & Work-Life Balance",
     description:
-      "Explore work environments designed to support different ways of working and living.",
+      "Flexible paid time off, paid parental and caregiver leave, dedicated volunteer hours, and hybrid work arrangements.",
   },
 ];
 
@@ -99,28 +102,28 @@ const jobCategories = [
 
 const benefits = [
   {
-    icon: Heart,
-    title: "Meaningful Work",
+    icon: Landmark,
+    title: "We Offer the Best 401(k) Match",
     description:
-      "Contribute to work that positively impacts people's lives every single day.",
+      "Dollar-for-dollar company match up to 6%, with immediate vesting and complimentary retirement planning guidance.",
   },
   {
-    icon: Lightbulb,
-    title: "Growth & Learning",
+    icon: HeartPulse,
+    title: "Day-One Health & Wellness",
     description:
-      "Access continuous learning programmes designed to advance your career.",
+      "Comprehensive medical, dental, vision, and mental health coverage starting on your very first day with wellness stipends.",
   },
   {
-    icon: Globe,
-    title: "Flexibility",
+    icon: GraduationCap,
+    title: "Tuition Assistance & Growth",
     description:
-      "Remote, hybrid, and on-site arrangements tailored to how you work best.",
+      "Up to 100% tuition reimbursement, certified skill training, and clear structured pathways for leadership development.",
   },
   {
-    icon: Users,
-    title: "Community",
+    icon: Clock,
+    title: "Generous PTO & Flexibility",
     description:
-      "A culture of inclusion, respect, and genuine collaboration at every level.",
+      "Flexible paid time off, paid caregiver leave, volunteer days, and supportive hybrid work environments.",
   },
 ];
 
@@ -205,27 +208,32 @@ export default function HomePage() {
                 departments.
               </p>
 
-              {/* CTA row with enhanced spacing */}
-              <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
-                <Link to="/apply" className="group w-full sm:w-auto">
+              {/* CTA row with high visibility */}
+              <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row sm:items-center gap-3.5">
+                <Link to="/benefits" className="group w-full sm:w-auto">
                   <Button
                     size="lg"
                     variant="primary"
                     rightIcon={
                       <ArrowRight
                         size={18}
-                        className="transition-transform duration-200 group-hover:translate-x-1"
+                        className="transition-transform duration-200 group-hover:translate-x-1 text-white"
                       />
                     }
-                    className="w-full sm:w-auto shadow-card-md hover:shadow-lg transition-all text-base px-8 py-3.5 rounded-xl font-semibold"
+                    className="w-full sm:w-auto shadow-md hover:shadow-lg transition-all text-base px-8 py-3.5 rounded-xl font-medium"
                   >
-                    Explore Opportunities
+                    Explore Employee Benefits
                   </Button>
                 </Link>
-                <div className="flex items-center gap-2 text-xs font-medium text-brand-secondarytext py-1">
-                  <ShieldCheck size={16} className="text-primary shrink-0" />
-                  <span>Direct Humana Hire · 100% Confidential</span>
-                </div>
+                <Link to="/apply" className="group w-full sm:w-auto">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full sm:w-auto text-base px-7 py-3.5 rounded-xl font-medium bg-white text-primary border-2 border-primary hover:bg-primary hover:text-white transition-all shadow-xs"
+                  >
+                    Apply Now
+                  </Button>
+                </Link>
               </div>
             </div>
 
@@ -257,7 +265,7 @@ export default function HomePage() {
                         Streamlined 6-Step Application
                       </p>
                       <p className="text-[11px] text-brand-secondarytext mt-0.5">
-                        Average completion: 10–12 mins · No account required
+                        Average completion: 10–12 mins
                       </p>
                     </div>
                   </div>
@@ -265,7 +273,7 @@ export default function HomePage() {
                     <Button
                       size="sm"
                       variant="primary"
-                      className="text-xs font-semibold px-3.5 py-1.5 shadow-xs"
+                      className="text-xs font-medium px-3.5 py-1.5 shadow-xs"
                     >
                       Apply
                     </Button>
@@ -380,14 +388,12 @@ export default function HomePage() {
       >
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
           <div className="max-w-2xl">
-            <p className="section-label">Why choose us</p>
+            <p className="section-label">Why choose Humana</p>
             <h2 className="mt-4 text-3xl font-bold text-brand-deeptext sm:text-4xl">
-              People are at the heart of everything we do
+              Comprehensive benefits designed for your future
             </h2>
             <p className="mt-4 text-base leading-relaxed text-brand-secondarytext">
-              We believe meaningful work transforms lives. That's why we match
-              every candidate with opportunities aligned to their skills,
-              values, and long-term career goals.
+              We invest in our people with industry-leading retirement plans, comprehensive healthcare coverage from day one, and continuous career development.
             </p>
           </div>
 
@@ -395,12 +401,12 @@ export default function HomePage() {
             {trustFeatures.map(({ icon: Icon, title, description }) => (
               <article
                 key={title}
-                className="rounded-xl border border-brand-border bg-white p-6 shadow-card hover:shadow-card-md hover:-translate-y-0.5 transition-all duration-200"
+                className="group rounded-2xl border border-brand-border bg-white p-6 shadow-card hover:shadow-card-md hover:border-primary/40 hover:-translate-y-1 transition-all duration-200"
               >
-                <div className="flex items-center justify-center size-11 rounded-xl bg-primary/10 text-primary mb-5">
+                <div className="flex items-center justify-center size-11 rounded-xl bg-primary text-white mb-5 shadow-xs group-hover:scale-110 transition-all duration-300">
                   <Icon size={20} />
                 </div>
-                <h3 className="text-base font-semibold text-brand-deeptext">
+                <h3 className="text-base font-semibold text-brand-deeptext group-hover:text-primary transition-colors">
                   {title}
                 </h3>
                 <p className="mt-2.5 text-sm text-brand-secondarytext leading-relaxed">
@@ -517,12 +523,12 @@ export default function HomePage() {
             {benefits.map(({ icon: Icon, title, description }) => (
               <div
                 key={title}
-                className="group bg-white rounded-2xl border border-brand-border p-7 shadow-card hover:shadow-card-md hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-200"
+                className="group bg-white rounded-2xl border border-brand-border p-7 shadow-card hover:shadow-card-md hover:border-primary/40 hover:-translate-y-1 transition-all duration-200"
               >
-                <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-5 group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+                <div className="size-12 rounded-2xl bg-primary flex items-center justify-center text-white mb-5 shadow-xs group-hover:scale-110 group-hover:shadow-md transition-all duration-300">
                   <Icon size={22} />
                 </div>
-                <h3 className="font-semibold text-base text-brand-deeptext">
+                <h3 className="font-semibold text-base text-brand-deeptext group-hover:text-primary transition-colors">
                   {title}
                 </h3>
                 <p className="mt-2.5 text-sm text-brand-secondarytext leading-relaxed">

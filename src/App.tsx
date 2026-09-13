@@ -6,6 +6,8 @@ import AdminLayout from './components/layout/AdminLayout'
 import ProtectedRoute from './components/layout/ProtectedRoute'
 import HomePage from './pages/HomePage'
 import ApplyPage from './pages/ApplyPage'
+import BenefitsPage from './pages/BenefitsPage'
+import AboutPage from './pages/AboutPage'
 import AdminLoginPage from './pages/admin/AdminLoginPage'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminApplicationsPage from './pages/admin/AdminApplicationsPage'
@@ -20,6 +22,8 @@ export default function App() {
           {/* Public routes */}
           <Route element={<SiteLayout />}>
             <Route path="/" element={<HomePage />} />
+            <Route path="/benefits" element={<BenefitsPage />} />
+            <Route path="/about" element={<AboutPage />} />
             <Route path="/apply" element={<ApplyPage />} />
           </Route>
 

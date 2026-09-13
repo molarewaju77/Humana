@@ -36,14 +36,14 @@ export default function SiteFooter() {
 
               <div>
                 <p className="text-xs font-semibold text-neutral-200 tracking-wider uppercase">
-                  Official Inquiries
+                  Build Your Career @ Humana
                 </p>
                 <p className="mt-2">
                   <a
-                    href="mailto:humana.officials@email.com"
+                    href="mailto:buildyourcareer@humana.com"
                     className="text-neutral-300 hover:text-white transition-colors hover:underline underline-offset-2"
                   >
-                    humana.officials@email.com
+                    buildyourcareer@humana.com
                   </a>
                 </p>
               </div>
@@ -56,6 +56,14 @@ export default function SiteFooter() {
               Careers & Pathways
             </p>
             <ul className="mt-6 space-y-3.5 text-sm">
+              <li>
+                <Link
+                  to="/benefits"
+                  className="text-neutral-400 hover:text-white transition-colors block py-0.5 font-medium text-emerald-400/90"
+                >
+                  Benefits & Total Rewards
+                </Link>
+              </li>
               <li>
                 <a
                   href="/#opportunities"
@@ -73,12 +81,12 @@ export default function SiteFooter() {
                 </Link>
               </li>
               <li>
-                <a
-                  href="/#about"
+                <Link
+                  to="/about"
                   className="text-neutral-400 hover:text-white transition-colors block py-0.5"
                 >
-                  Why Choose Humana
-                </a>
+                  About Humana
+                </Link>
               </li>
               <li>
                 <a

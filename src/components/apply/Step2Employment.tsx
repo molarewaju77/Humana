@@ -127,7 +127,7 @@ export default function Step2Employment({ defaultValues, onNext, onBack }: Props
         />
       </FormSection>
 
-        <div className="mt-4 pt-4 border-t border-brand-border">
+        <div className="pt-8 border-t border-brand-border/70">
           <Textarea
             label="Why do you believe you are the right person for this position?"
             required
