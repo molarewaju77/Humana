@@ -1,21 +1,40 @@
-import { useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { FileText, Clock, Search, UserCheck, CheckCircle, XCircle, ArrowRight } from 'lucide-react'
-import { getApplications, getApplicationStats } from '../../lib/storage'
+import { getApplications, fetchApplicationsFromSupabase } from '../../lib/storage'
+import type { Application } from '../../lib/types'
 import { formatDate } from '../../lib/utils'
 import StatusBadge from '../../components/ui/StatusBadge'
 import EmptyState from '../../components/ui/EmptyState'
 
 export default function AdminDashboardPage() {
-  const stats = useMemo(() => getApplicationStats(), [])
-  const recentApps = useMemo(() => getApplications().slice(0, 5), [])
+  const [apps, setApps] = useState<Application[]>(() => getApplications())
+
+  useEffect(() => {
+    fetchApplicationsFromSupabase().then((data) => {
+      setApps(data)
+    })
+  }, [])
+
+  const stats = useMemo(() => {
+    return {
+      total: apps.length,
+      pending: apps.filter((a) => a.status === 'pending').length,
+      underReview: apps.filter((a) => a.status === 'under_review').length,
+      approved: apps.filter((a) => a.status === 'approved').length,
+      rejected: apps.filter((a) => a.status === 'rejected').length,
+      closed: apps.filter((a) => a.status === 'closed').length,
+    }
+  }, [apps])
+
+  const recentApps = useMemo(() => apps.slice(0, 5), [apps])
 
   const statCards = [
     { label: 'Total Applications', value: stats.total, icon: FileText, color: 'bg-blue-50 text-blue-600 border-blue-100' },
-    { label: 'Submitted', value: stats.submitted, icon: Clock, color: 'bg-amber-50 text-amber-600 border-amber-100' },
+    { label: 'Pending', value: stats.pending, icon: Clock, color: 'bg-amber-50 text-amber-600 border-amber-100' },
     { label: 'Under Review', value: stats.underReview, icon: Search, color: 'bg-purple-50 text-purple-600 border-purple-100' },
-    { label: 'Interview', value: stats.interview, icon: UserCheck, color: 'bg-teal-50 text-teal-600 border-teal-100' },
-    { label: 'Decision', value: stats.decision, icon: CheckCircle, color: 'bg-green-50 text-green-600 border-green-100' },
+    { label: 'Approved', value: stats.approved, icon: UserCheck, color: 'bg-teal-50 text-teal-600 border-teal-100' },
+    { label: 'Rejected', value: stats.rejected, icon: CheckCircle, color: 'bg-green-50 text-green-600 border-green-100' },
     { label: 'Closed', value: stats.closed, icon: XCircle, color: 'bg-gray-50 text-gray-500 border-gray-100' },
   ]
 

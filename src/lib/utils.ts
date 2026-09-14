@@ -24,28 +24,28 @@ export function formatDateTime(iso: string): string {
   }).format(new Date(iso))
 }
 
-export function getStatusLabel(status: ApplicationStatus): string {
-  const labels: Record<ApplicationStatus, string> = {
-    submitted: 'Submitted',
+export function getStatusLabel(status: ApplicationStatus | string): string {
+  const labels: Record<string, string> = {
+    pending: 'Pending',
+    submitted: 'Pending',
     under_review: 'Under Review',
-    interview: 'Interview',
-    assessment: 'Assessment',
-    decision: 'Decision',
+    approved: 'Approved',
+    rejected: 'Rejected',
     closed: 'Closed',
   }
-  return labels[status]
+  return labels[status] || 'Pending'
 }
 
-export function getStatusColor(status: ApplicationStatus): string {
-  const colors: Record<ApplicationStatus, string> = {
-    submitted: 'bg-blue-50 text-blue-700 border-blue-200',
-    under_review: 'bg-amber-50 text-amber-700 border-amber-200',
-    interview: 'bg-purple-50 text-purple-700 border-purple-200',
-    assessment: 'bg-orange-50 text-orange-700 border-orange-200',
-    decision: 'bg-teal-50 text-teal-700 border-teal-200',
+export function getStatusColor(status: ApplicationStatus | string): string {
+  const colors: Record<string, string> = {
+    pending: 'bg-amber-50 text-amber-700 border-amber-200',
+    submitted: 'bg-amber-50 text-amber-700 border-amber-200',
+    under_review: 'bg-blue-50 text-blue-700 border-blue-200',
+    approved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    rejected: 'bg-rose-50 text-rose-700 border-rose-200',
     closed: 'bg-gray-50 text-gray-600 border-gray-200',
   }
-  return colors[status]
+  return colors[status] || 'bg-amber-50 text-amber-700 border-amber-200'
 }
 
 export function truncate(text: string, maxLen: number): string {

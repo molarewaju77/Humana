@@ -1,23 +1,29 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Filter, ArrowRight, FileText, ChevronLeft, ChevronRight } from 'lucide-react'
-import { getApplications } from '../../lib/storage'
-import type { ApplicationStatus } from '../../lib/types'
+import { Search, Filter, Eye, FileText, ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react'
+import { getApplications, fetchApplicationsFromSupabase } from '../../lib/storage'
+import type { Application, ApplicationStatus } from '../../lib/types'
 import { formatDate, getStatusLabel } from '../../lib/utils'
 import StatusBadge from '../../components/ui/StatusBadge'
 import EmptyState from '../../components/ui/EmptyState'
 
 const ALL_STATUSES: ApplicationStatus[] = [
-  'submitted', 'under_review', 'interview', 'assessment', 'decision', 'closed',
+  'pending', 'under_review', 'approved', 'rejected', 'closed',
 ]
 
 const PAGE_SIZE = 10
 
 export default function AdminApplicationsPage() {
-  const allApps = useMemo(() => getApplications(), [])
+  const [allApps, setAllApps] = useState<Application[]>(() => getApplications())
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | 'all'>('all')
   const [page, setPage] = useState(1)
+
+  useEffect(() => {
+    fetchApplicationsFromSupabase().then((apps) => {
+      setAllApps(apps)
+    })
+  }, [])
 
   const filtered = useMemo(() => {
     let apps = allApps
@@ -52,43 +58,56 @@ export default function AdminApplicationsPage() {
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-brand-deeptext">Applications</h1>
-        <p className="text-sm text-brand-secondarytext mt-1">
+        <p className="text-xs text-brand-secondarytext mt-1">
           {filtered.length} {filtered.length === 1 ? 'application' : 'applications'} found
         </p>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-xl border border-brand-border shadow-card p-4 flex flex-col sm:flex-row gap-3">
-        {/* Search */}
-        <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-secondarytext" />
+      {/* Refined Search & Filter Controls */}
+      <div className="bg-white rounded-xl border border-brand-border p-3.5 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+        {/* Search Input */}
+        <div className="relative flex-1 min-w-0">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-secondarytext pointer-events-none z-10" />
           <input
-            type="search"
+            type="text"
             placeholder="Search by name, email, or reference number…"
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="field-input pl-9 h-10"
+            style={{ paddingLeft: '2.625rem', paddingRight: '2.25rem' }}
+            className="w-full h-10 text-xs text-brand-deeptext bg-white rounded-lg border border-brand-border focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-brand-secondarytext/60"
           />
+          {search && (
+            <button
+              type="button"
+              onClick={() => handleSearchChange('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-secondarytext hover:text-brand-deeptext p-0.5 rounded transition-colors z-10"
+              aria-label="Clear search"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
 
-        {/* Status filter */}
-        <div className="relative">
-          <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-secondarytext" />
+        {/* Status Filter Dropdown */}
+        <div className="relative shrink-0 sm:w-52">
+          <Filter size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-secondarytext pointer-events-none z-10" />
           <select
             value={statusFilter}
             onChange={(e) => handleStatusChange(e.target.value as ApplicationStatus | 'all')}
-            className="field-input pl-9 h-10 pr-8 appearance-none w-full sm:w-44"
+            style={{ paddingLeft: '2.625rem', paddingRight: '2.25rem' }}
+            className="w-full h-10 text-xs font-medium text-brand-deeptext bg-white rounded-lg border border-brand-border focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer"
           >
-            <option value="all">All statuses</option>
+            <option value="all">All Statuses</option>
             {ALL_STATUSES.map((s) => (
               <option key={s} value={s}>{getStatusLabel(s)}</option>
             ))}
           </select>
+          <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-secondarytext pointer-events-none z-10" />
         </div>
       </div>
 
-      {/* Table / cards */}
-      <div className="bg-white rounded-2xl border border-brand-border shadow-card overflow-hidden">
+      {/* Table / Cards */}
+      <div className="bg-white rounded-2xl border border-brand-border overflow-hidden">
         {paginated.length === 0 ? (
           <EmptyState
             icon={<FileText size={24} />}
@@ -102,7 +121,7 @@ export default function AdminApplicationsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-brand-border bg-brand-softbg">
-                    {['Reference', 'Applicant', 'Email', 'Submitted', 'Status', ''].map((h) => (
+                    {['Reference', 'Applicant', 'Email', 'Submitted', 'Status', 'View'].map((h) => (
                       <th
                         key={h}
                         className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-widest text-brand-secondarytext"
@@ -114,7 +133,7 @@ export default function AdminApplicationsPage() {
                 </thead>
                 <tbody className="divide-y divide-brand-border">
                   {paginated.map((app) => (
-                    <tr key={app.id} className="hover:bg-brand-softbg transition-colors group">
+                    <tr key={app.id} className="hover:bg-brand-softbg/60 transition-colors group">
                       <td className="px-5 py-4">
                         <span className="text-xs font-mono font-semibold text-brand-deeptext">
                           {app.referenceNumber}
@@ -144,10 +163,11 @@ export default function AdminApplicationsPage() {
                       <td className="px-5 py-4">
                         <Link
                           to={`/admin/applications/${app.id}`}
-                          className="flex items-center justify-center size-8 rounded-lg text-brand-secondarytext hover:bg-primary/10 hover:text-primary transition-colors"
-                          aria-label={`View application ${app.referenceNumber}`}
+                          className="inline-flex items-center justify-center size-8 rounded-lg text-brand-secondarytext hover:text-primary hover:bg-primary/10 transition-colors"
+                          aria-label={`View details for ${app.referenceNumber}`}
+                          title="View Application Details"
                         >
-                          <ArrowRight size={16} />
+                          <Eye size={17} />
                         </Link>
                       </td>
                     </tr>
@@ -159,22 +179,42 @@ export default function AdminApplicationsPage() {
             {/* Mobile cards */}
             <div className="md:hidden divide-y divide-brand-border">
               {paginated.map((app) => (
-                <Link
+                <div
                   key={app.id}
-                  to={`/admin/applications/${app.id}`}
-                  className="block px-5 py-4 hover:bg-brand-softbg transition-colors"
+                  className="p-4 space-y-3 hover:bg-brand-softbg/50 transition-colors"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-brand-deeptext">
-                        {app.personalInfo.firstName} {app.personalInfo.lastName}
-                      </p>
-                      <p className="text-xs font-mono text-brand-secondarytext mt-0.5">{app.referenceNumber}</p>
-                      <p className="text-xs text-brand-secondarytext mt-1">{formatDate(app.submittedAt)}</p>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <span className="text-xs font-bold text-primary">
+                          {app.personalInfo.firstName?.[0]}{app.personalInfo.lastName?.[0]}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-semibold text-brand-deeptext truncate">
+                          {app.personalInfo.firstName} {app.personalInfo.lastName}
+                        </h3>
+                        <p className="text-xs text-brand-secondarytext truncate">{app.personalInfo.email}</p>
+                      </div>
                     </div>
                     <StatusBadge status={app.status} size="sm" />
                   </div>
-                </Link>
+
+                  <div className="flex items-center justify-between text-xs text-brand-secondarytext pt-2 border-t border-brand-border/60">
+                    <div>
+                      <span className="font-mono font-medium text-brand-deeptext block">{app.referenceNumber}</span>
+                      <span className="text-[11px]">Submitted {formatDate(app.submittedAt)}</span>
+                    </div>
+
+                    <Link
+                      to={`/admin/applications/${app.id}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-white font-medium text-xs shadow-xs hover:bg-primary-dark transition-all shrink-0"
+                    >
+                      <Eye size={14} />
+                      <span>View Details</span>
+                    </Link>
+                  </div>
+                </div>
               ))}
             </div>
           </>
@@ -212,3 +252,4 @@ export default function AdminApplicationsPage() {
     </div>
   )
 }
+

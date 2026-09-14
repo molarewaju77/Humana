@@ -1,11 +1,11 @@
 // Application Status
 export type ApplicationStatus =
-  | 'submitted'
+  | 'pending'
   | 'under_review'
-  | 'interview'
-  | 'assessment'
-  | 'decision'
+  | 'approved'
+  | 'rejected'
   | 'closed'
+
 
 // Personal Info
 export interface PersonalInfo {

@@ -94,13 +94,13 @@ export default function ApplyPage() {
         id: crypto.randomUUID(),
         referenceNumber: refNum,
         submittedAt: now,
-        status: 'submitted',
+        status: 'pending',
         personalInfo: formStore.personalInfo as Application['personalInfo'],
         employmentHistory: formStore.employmentHistory as Application['employmentHistory'],
         experience: formStore.experience as Application['experience'],
         workPreferences: formStore.workPreferences as Application['workPreferences'],
         additionalInfo: formStore.additionalInfo as Application['additionalInfo'],
-        statusHistory: [{ status: 'submitted', changedAt: now }],
+        statusHistory: [{ status: 'pending', changedAt: now }],
         adminNotes: [],
       }
 

@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Navigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Eye, EyeOff, Lock } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import { adminLoginSchema, type AdminLoginData } from '../../lib/validators'
-import { adminLogin } from '../../lib/auth'
+import { adminLogin, isAdminAuthenticated } from '../../lib/auth'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
@@ -15,6 +15,11 @@ export default function AdminLoginPage() {
   const { addToast } = useToast()
   const [showPassword, setShowPassword] = useState(false)
 
+  // Redirect to dashboard if already logged in
+  if (isAdminAuthenticated()) {
+    return <Navigate to="/admin/dashboard" replace />
+  }
+
   const {
     register,
     handleSubmit,
@@ -24,12 +29,12 @@ export default function AdminLoginPage() {
   })
 
   async function onSubmit(data: AdminLoginData) {
-    const success = await adminLogin(data.email, data.password)
-    if (success) {
+    const res = await adminLogin(data.email, data.password)
+    if (res.success) {
       addToast('success', 'Signed in successfully', 'Welcome back to the admin portal.')
-      navigate('/admin/dashboard')
+      navigate('/admin/dashboard', { replace: true })
     } else {
-      addToast('error', 'Invalid credentials', 'Please check your email and password and try again.')
+      addToast('error', 'Authentication failed', res.error || 'Please check your email and password and try again.')
     }
   }
 
@@ -51,7 +56,7 @@ export default function AdminLoginPage() {
               type="email"
               required
               autoComplete="email"
-              placeholder="admin@hamana.com"
+              placeholder="admin@example.com"
               error={errors.email?.message}
               {...register('email')}
             />
@@ -81,37 +86,11 @@ export default function AdminLoginPage() {
               {errors.password && <p className="field-error">{errors.password.message}</p>}
             </div>
 
-            <div className="flex justify-end">
-              <a href="#" className="text-xs font-semibold text-primary hover:text-primary-dark transition-colors">
-                Forgot password?
-              </a>
-            </div>
-
-            <Button type="submit" size="lg" isLoading={isSubmitting} className="w-full">
+            <Button type="submit" size="lg" isLoading={isSubmitting} className="w-full mt-2">
               Sign In
             </Button>
           </form>
-
-          {/* Demo credentials notice */}
-          <div className="mt-6 pt-5 border-t border-brand-border">
-            <div className="flex items-start gap-2.5 p-3.5 rounded-lg bg-primary/5 border border-primary/15">
-              <Lock size={14} className="text-primary shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-bold text-primary">Demo credentials</p>
-                <p className="text-xs text-brand-secondarytext mt-0.5">
-                  Email: <code className="font-mono">admin@hamana.com</code>
-                </p>
-                <p className="text-xs text-brand-secondarytext">
-                  Password: <code className="font-mono">Admin2026!</code>
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
-
-        <p className="text-center text-xs text-brand-secondarytext mt-6">
-          This is a demonstration platform. Authorised access only.
-        </p>
       </div>
     </div>
   )
