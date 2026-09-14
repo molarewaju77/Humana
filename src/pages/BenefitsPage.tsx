@@ -239,10 +239,10 @@ export default function BenefitsPage() {
             </h1>
 
             <p className="mt-4 text-base sm:text-lg text-brand-secondarytext leading-relaxed font-normal max-w-2xl mx-auto">
-              We offer industry-leading financial security, day-one health coverage, and tuition support designed to help you and your family thrive.
+              We offer industry-leading financial security, day-one health
+              coverage, and tuition support designed to help you and your family
+              thrive.
             </p>
-
-
 
             {/* TRUST INDICATORS — ONE CLEAN SINGLE LINE */}
             <div className="mt-8 pt-5 border-t border-brand-border/60 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-medium text-brand-secondarytext">
@@ -309,69 +309,92 @@ export default function BenefitsPage() {
         </div>
       </section>
 
-      {/* ====== CLEAN MINIMAL 401(K) BREAKDOWN ====== */}
-      <section id="breakdown" className="py-12 sm:py-16 bg-[#FAFCF8] border-b border-brand-border">
-        <div className="mx-auto max-w-6xl px-5 sm:px-8">
-          <div className="rounded-2xl border border-brand-border bg-white p-7 sm:p-10 shadow-xs">
-            <div className="grid lg:grid-cols-12 gap-8 items-center">
-              <div className="lg:col-span-7 space-y-4">
-                <span className="inline-block text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 px-2.5 py-1 rounded-md">
-                  401(k) & Retirement Savings
-                </span>
-                <h2 className="text-2xl sm:text-3xl font-bold text-brand-deeptext">
-                  Dollar-for-dollar 401(k) match up to 6%
-                </h2>
-                <p className="text-sm sm:text-base text-brand-secondarytext leading-relaxed">
-                  Humana matches 100% of your contribution up to 6% of your eligible compensation. Best of all, company contributions are <strong>100% immediately vested on Day 1</strong>.
-                </p>
+      {/* ====== ENHANCED 401(K) MATCHING BENEFIT SECTION ====== */}
+      <section
+        id="breakdown"
+        className="py-12 sm:py-16 bg-[#FAFCF8] border-b border-brand-border"
+      >
+        <div className="mx-auto max-w-4xl px-5 sm:px-8">
+          <div className="space-y-6">
+            <span className="inline-block text-xs font-semibold uppercase tracking-wider text-primary bg-primary/10 px-3 py-1 rounded-full">
+              Retirement Benefits
+            </span>
 
-                <div className="pt-2 flex flex-wrap gap-4 text-xs font-medium text-brand-deeptext">
-                  <div className="flex items-center gap-2 bg-[#FAFCF8] px-3.5 py-2 rounded-lg border border-brand-border">
-                    <ShieldCheck size={16} className="text-primary" />
-                    <span>Immediate 100% Vesting</span>
+            <h2 className="text-2xl sm:text-3xl mb-2 font-bold text-brand-deeptext tracking-tight">
+              Enhanced 401(k) Matching Benefit
+            </h2>
+
+            <p className="text-base sm:text-lg text-brand-secondarytext leading-relaxed font-normal">
+              We’re committed to helping our employees build a stronger
+              financial future. Under this enhanced 401(k) benefit, eligible
+              employee contributions will receive a dollar-for-dollar employer
+              match, effectively doubling each qualifying contribution, subject
+              to applicable plan limits.
+            </p>
+
+            <p className="text-base sm:text-lg text-brand-secondarytext leading-relaxed font-normal">
+              In addition, eligible existing 401(k) balances will receive an
+              equivalent dollar-for-dollar employer contribution, effectively
+              doubling the qualifying existing balance, subject to the terms,
+              eligibility requirements, contribution limits, and applicable
+              regulations of the plan.
+            </p>
+
+            <div className="border-l-4 border-primary pl-4 py-1 text-base font-medium text-brand-deeptext leading-relaxed">
+              This enhanced retirement benefit is designed to significantly
+              strengthen employees’ retirement savings and support greater
+              long-term financial security.
+            </div>
+
+            {/* Breakdown of the two separate 401(k) benefits */}
+            <div className="pt-6 border-t border-brand-border/60 space-y-4">
+              <h3 className="text-base sm:text-lg font-bold text-brand-deeptext">
+                How the Enhanced 401(k) Benefit Works:
+              </h3>
+
+              <div className="space-y-4 text-sm sm:text-base text-brand-secondarytext leading-relaxed">
+                <div className="flex items-start gap-3">
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-xs mt-0.5">
+                    1
+                  </span>
+                  <div>
+                    <strong className="text-brand-deeptext font-semibold">
+                      New contributions:
+                    </strong>{" "}
+                    If an employee contributes an eligible amount to their
+                    401(k), the company contributes the same amount, subject to
+                    the plan limits. For example, an eligible $1,000 employee
+                    contribution + $1,000 employer contribution = $2,000.
                   </div>
-                  <div className="flex items-center gap-2 bg-[#FAFCF8] px-3.5 py-2 rounded-lg border border-brand-border">
-                    <ShieldCheck size={16} className="text-primary" />
-                    <span>Free Financial Advisors</span>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-xs mt-0.5">
+                    2
+                  </span>
+                  <div>
+                    <strong className="text-brand-deeptext font-semibold">
+                      Money already in the 401(k):
+                    </strong>{" "}
+                    An employee’s qualifying existing 401(k) balance receives an
+                    equal employer contribution. For example, if $20,000 of an
+                    existing balance qualifies, the company contributes another
+                    $20,000, resulting in $40,000, assuming the plan and legal
+                    limits permit the full amount.
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Clean minimal summary table */}
-              <div className="lg:col-span-5 rounded-xl border border-brand-border bg-[#FAFCF8] p-6 space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-brand-secondarytext border-b border-brand-border pb-3">
-                  Summary of Total Rewards
-                </h3>
-                <div className="space-y-2.5 text-xs sm:text-sm">
-                  <div className="flex justify-between py-1 border-b border-brand-border/50">
-                    <span className="text-brand-secondarytext">401(k) Match</span>
-                    <span className="font-bold text-primary">100% match up to 6%</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-brand-border/50">
-                    <span className="text-brand-secondarytext">Match Vesting</span>
-                    <span className="font-bold text-brand-deeptext">Immediate (Day 1)</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-brand-border/50">
-                    <span className="text-brand-secondarytext">Healthcare Coverage</span>
-                    <span className="font-bold text-brand-deeptext">Effective Day 1</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-brand-border/50">
-                    <span className="text-brand-secondarytext">Tuition Reimbursement</span>
-                    <span className="font-bold text-brand-deeptext">Up to $5,250 / year</span>
-                  </div>
-                  <div className="flex justify-between py-1">
-                    <span className="text-brand-secondarytext">Paid Parental Leave</span>
-                    <span className="font-bold text-brand-deeptext">12 Weeks (100% Pay)</span>
-                  </div>
-                </div>
-                <div className="pt-3">
-                  <Link to="/apply">
-                    <Button size="sm" variant="primary" className="w-full text-xs font-medium py-2">
-                      Apply Now
-                    </Button>
-                  </Link>
-                </div>
-              </div>
+            <div className="pt-4 border-t border-brand-border/60 flex flex-wrap items-center gap-6 text-xs sm:text-sm font-medium text-brand-secondarytext">
+              <span className="flex items-center gap-2">
+                <CheckCircle2 size={16} className="text-primary shrink-0" />
+                <span>Dollar-for-Dollar Employer Match</span>
+              </span>
+              <span className="flex items-center gap-2">
+                <CheckCircle2 size={16} className="text-primary shrink-0" />
+                <span>Immediate 100% Vesting</span>
+              </span>
             </div>
           </div>
         </div>
@@ -490,7 +513,8 @@ export default function BenefitsPage() {
             Ready to Start Your Career at Humana?
           </h2>
           <p className="mt-3 text-sm sm:text-base text-white/90 max-w-lg mx-auto">
-            Complete your application in 10–12 minutes for direct consideration across clinical, tech, and corporate roles.
+            Complete your application in 10–12 minutes for direct consideration
+            across clinical, tech, and corporate roles.
           </p>
           <div className="mt-6">
             <Link to="/apply">

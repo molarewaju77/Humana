@@ -6,9 +6,6 @@ import {
   Award,
   ArrowRight,
   CheckCircle2,
-  Building2,
-  Globe2,
-  Sparkles,
 } from "lucide-react";
 import Button from "../components/ui/Button";
 
@@ -58,7 +55,9 @@ export default function AboutPage() {
             </h1>
 
             <p className="mt-4 text-base sm:text-lg text-brand-secondarytext leading-relaxed font-normal max-w-2xl mx-auto">
-              Humana is a leading healthcare company dedicated to helping millions of people achieve their best health. We connect passionate professionals with transformative careers.
+              Humana is a leading healthcare company dedicated to helping
+              millions of people achieve their best health. We connect
+              passionate professionals with transformative careers.
             </p>
           </div>
 
@@ -90,10 +89,16 @@ export default function AboutPage() {
                 Empowering People to Live Healthier Lives
               </h2>
               <p className="text-sm text-brand-secondarytext leading-relaxed">
-                For over six decades, Humana has stood at the forefront of healthcare innovation. Headquartered in Louisville, Kentucky, we combine clinical expertise, technology, and human compassion to deliver care when and where it matters most.
+                For over six decades, Humana has stood at the forefront of
+                healthcare innovation. Headquartered in Louisville, Kentucky, we
+                combine clinical expertise, technology, and human compassion to
+                deliver care when and where it matters most.
               </p>
               <p className="text-sm text-brand-secondarytext leading-relaxed">
-                Our workforce includes tens of thousands of dedicated nurses, physicians, data scientists, software engineers, and administrative professionals working together across all 50 states.
+                Our workforce includes tens of thousands of dedicated nurses,
+                physicians, data scientists, software engineers, and
+                administrative professionals working together across all 50
+                states.
               </p>
             </div>
 
@@ -103,20 +108,43 @@ export default function AboutPage() {
               </h3>
               <ul className="space-y-3 text-xs sm:text-sm text-brand-secondarytext">
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
-                  <span>Ranked among the Fortune 50 largest corporations in America.</span>
+                  <CheckCircle2
+                    size={16}
+                    className="text-primary shrink-0 mt-0.5"
+                  />
+                  <span>
+                    Ranked among the Fortune 50 largest corporations in America.
+                  </span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
-                  <span>Consistently recognized as a Top Employer for Diversity and Inclusion.</span>
+                  <CheckCircle2
+                    size={16}
+                    className="text-primary shrink-0 mt-0.5"
+                  />
+                  <span>
+                    Consistently recognized as a Top Employer for Diversity and
+                    Inclusion.
+                  </span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
-                  <span>Industry-leading employee benefits, 401(k) matching, and tuition assistance.</span>
+                  <CheckCircle2
+                    size={16}
+                    className="text-primary shrink-0 mt-0.5"
+                  />
+                  <span>
+                    Industry-leading employee benefits, 401(k) matching, and
+                    tuition assistance.
+                  </span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
-                  <span>Comprehensive remote, hybrid, and on-site career opportunities.</span>
+                  <CheckCircle2
+                    size={16}
+                    className="text-primary shrink-0 mt-0.5"
+                  />
+                  <span>
+                    Comprehensive remote, hybrid, and on-site career
+                    opportunities.
+                  </span>
                 </li>
               </ul>
             </div>
@@ -167,7 +195,8 @@ export default function AboutPage() {
             Join the Humana Team Today
           </h2>
           <p className="mt-3 text-sm sm:text-base text-white/90 max-w-lg mx-auto">
-            Explore open opportunities or learn more about our employee total rewards package.
+            Explore open opportunities or learn more about our employee total
+            rewards package.
           </p>
           <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3.5">
             <Link to="/apply">
