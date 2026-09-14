@@ -1,15 +1,32 @@
 import { useRef, useState } from 'react'
-import { UploadCloud, X, FileText, AlertCircle } from 'lucide-react'
+import { UploadCloud, X, FileText, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react'
 import { cn, validateFile } from '../../lib/utils'
+import { uploadDocumentFile } from '../../lib/supabase'
 
 interface FileUploadProps {
   label?: string
   required?: boolean
   error?: string
   helper?: string
-  value?: string // stored file name
+  value?: string // stored file name or public URL
   onChange?: (fileName: string | undefined) => void
   accept?: string
+}
+
+function getDisplayFileName(val?: string) {
+  if (!val) return ''
+  try {
+    if (val.startsWith('http://') || val.startsWith('https://')) {
+      const url = new URL(val)
+      const pathname = url.pathname
+      const lastPart = pathname.split('/').pop() || val
+      const cleanName = lastPart.replace(/^\d+_/, '')
+      return decodeURIComponent(cleanName)
+    }
+  } catch {
+    // fallback
+  }
+  return val
 }
 
 export default function FileUpload({
@@ -24,15 +41,26 @@ export default function FileUpload({
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragActive, setDragActive] = useState(false)
   const [localError, setLocalError] = useState<string>('')
+  const [uploading, setUploading] = useState(false)
 
-  function handleFile(file: File) {
+  async function handleFile(file: File) {
     const validationError = validateFile(file)
     if (validationError) {
       setLocalError(validationError)
       return
     }
     setLocalError('')
-    onChange?.(file.name)
+    setUploading(true)
+
+    try {
+      const uploadedUrl = await uploadDocumentFile(file)
+      onChange?.(uploadedUrl || file.name)
+    } catch (err: any) {
+      setLocalError(err.message || 'Failed to upload file to storage.')
+      onChange?.(file.name)
+    } finally {
+      setUploading(false)
+    }
   }
 
   function handleDrop(e: React.DragEvent) {
@@ -54,6 +82,7 @@ export default function FileUpload({
   }
 
   const displayError = localError || error
+  const displayFileName = getDisplayFileName(value)
 
   return (
     <div className="field-wrapper">
@@ -65,13 +94,16 @@ export default function FileUpload({
       )}
 
       {value ? (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-brand-border bg-brand-softbg">
+        <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-primary/30 bg-primary/5">
           <div className="flex items-center justify-center size-9 rounded-lg bg-primary/10 text-primary shrink-0">
             <FileText size={18} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-brand-deeptext truncate">{value}</p>
-            <p className="text-xs text-brand-secondarytext">File ready for submission</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-medium text-brand-deeptext truncate">{displayFileName}</p>
+              <CheckCircle2 size={14} className="text-primary shrink-0" />
+            </div>
+            <p className="text-xs text-brand-secondarytext">Uploaded & ready for submission</p>
           </div>
           <button
             type="button"
@@ -81,6 +113,14 @@ export default function FileUpload({
           >
             <X size={14} />
           </button>
+        </div>
+      ) : uploading ? (
+        <div className="border-2 border-dashed border-primary/50 bg-primary/5 rounded-xl p-8 flex flex-col items-center justify-center gap-3 text-center">
+          <Loader2 size={26} className="text-primary animate-spin" />
+          <div>
+            <p className="text-sm font-semibold text-brand-deeptext">Uploading file to storage…</p>
+            <p className="text-xs text-brand-secondarytext mt-0.5">Please wait a moment</p>
+          </div>
         </div>
       ) : (
         <div
@@ -123,6 +163,7 @@ export default function FileUpload({
         onChange={handleChange}
         className="sr-only"
         aria-hidden="true"
+        disabled={uploading}
       />
 
       {displayError && (

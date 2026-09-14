@@ -54,6 +54,20 @@ function YesNo(val: string | undefined): string | undefined {
   return val === 'yes' ? 'Yes' : val === 'no' ? 'No' : val
 }
 
+function formatDocName(val?: string) {
+  if (!val) return ''
+  if (val.startsWith('http://') || val.startsWith('https://')) {
+    try {
+      const url = new URL(val)
+      const last = url.pathname.split('/').pop() || val
+      return decodeURIComponent(last.replace(/^\d+_/, ''))
+    } catch {
+      return val
+    }
+  }
+  return val
+}
+
 export default function Step6Review({ formStore, onEdit, onBack, onSubmit, submitting }: Props) {
   const {
     personalInfo: pi,
@@ -182,7 +196,7 @@ export default function Step6Review({ formStore, onEdit, onBack, onSubmit, submi
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-brand-secondarytext">Resume</p>
-                  <p className="text-sm text-brand-deeptext">{ex.resumeFileName}</p>
+                  <p className="text-sm text-brand-deeptext">{formatDocName(ex.resumeFileName)}</p>
                 </div>
               </div>
             )}
@@ -193,7 +207,7 @@ export default function Step6Review({ formStore, onEdit, onBack, onSubmit, submi
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-brand-secondarytext">Portfolio</p>
-                  <p className="text-sm text-brand-deeptext">{ex.portfolioFileName}</p>
+                  <p className="text-sm text-brand-deeptext">{formatDocName(ex.portfolioFileName)}</p>
                 </div>
               </div>
             )}
@@ -204,7 +218,7 @@ export default function Step6Review({ formStore, onEdit, onBack, onSubmit, submi
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-brand-secondarytext">ID (Front)</p>
-                  <p className="text-sm text-brand-deeptext">{ai.idFrontFileName}</p>
+                  <p className="text-sm text-brand-deeptext">{formatDocName(ai.idFrontFileName)}</p>
                 </div>
               </div>
             )}
@@ -215,7 +229,7 @@ export default function Step6Review({ formStore, onEdit, onBack, onSubmit, submi
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-brand-secondarytext">ID (Back)</p>
-                  <p className="text-sm text-brand-deeptext">{ai.idBackFileName}</p>
+                  <p className="text-sm text-brand-deeptext">{formatDocName(ai.idBackFileName)}</p>
                 </div>
               </div>
             )}
@@ -226,7 +240,7 @@ export default function Step6Review({ formStore, onEdit, onBack, onSubmit, submi
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-brand-secondarytext">SSN Card</p>
-                  <p className="text-sm text-brand-deeptext">{ai.ssnCardFileName}</p>
+                  <p className="text-sm text-brand-deeptext">{formatDocName(ai.ssnCardFileName)}</p>
                 </div>
               </div>
             )}

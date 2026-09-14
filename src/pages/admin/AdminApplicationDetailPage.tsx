@@ -17,7 +17,8 @@ import {
   CheckCircle,
   FileCheck,
   Copy,
-  Check
+  Check,
+  ExternalLink,
 } from 'lucide-react'
 import { getApplicationById, updateApplicationStatus, addAdminNote } from '../../lib/storage'
 import type { ApplicationStatus } from '../../lib/types'
@@ -43,6 +44,49 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
   }
 
   return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      className="p-1 rounded text-brand-secondarytext hover:text-brand-deeptext hover:bg-black/5 transition-colors shrink-0"
+      title={`Copy ${label || 'text'}`}
+    >
+      {copied ? <Check size={13} className="text-primary" /> : <Copy size={13} />}
+    </button>
+  )
+}
+
+function DocumentRow({ label, url, icon: Icon }: { label: string; url: string; icon: any }) {
+  const isUrl = url.startsWith('http://') || url.startsWith('https://')
+  const cleanName = isUrl ? decodeURIComponent(url.split('/').pop()?.replace(/^\d+_/, '') || url) : url
+
+  return (
+    <div className="flex items-center justify-between p-2.5 rounded-lg border border-brand-border/80 bg-brand-softbg/60 gap-3">
+      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+        <Icon size={15} className="text-primary shrink-0" />
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] text-brand-secondarytext font-normal">{label}</p>
+          <p className="text-xs font-normal text-brand-deeptext truncate" title={cleanName}>
+            {cleanName}
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center gap-1.5 shrink-0">
+        {isUrl && (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-primary hover:text-white hover:bg-primary rounded-md border border-primary/30 transition-colors"
+          >
+            <ExternalLink size={12} />
+            <span>Open</span>
+          </a>
+        )}
+        <CopyButton text={url} label={label} />
+      </div>
+    </div>
+  )
+}
     <button
       onClick={handleCopy}
       type="button"
@@ -332,68 +376,23 @@ export default function AdminApplicationDetailPage() {
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {ex.resumeFileName && (
-                  <div className="flex items-center justify-between p-2.5 rounded-lg border border-brand-border/80 bg-brand-softbg/60">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <FileText size={15} className="text-primary shrink-0" />
-                      <div className="min-w-0">
-                        <p className="text-[11px] text-brand-secondarytext font-normal">Resume</p>
-                        <p className="text-xs font-normal text-brand-deeptext truncate">{ex.resumeFileName}</p>
-                      </div>
-                    </div>
-                    <CopyButton text={ex.resumeFileName} label="Resume File Name" />
-                  </div>
+                  <DocumentRow label="Resume" url={ex.resumeFileName} icon={FileText} />
                 )}
 
                 {ex.portfolioFileName && (
-                  <div className="flex items-center justify-between p-2.5 rounded-lg border border-brand-border/80 bg-brand-softbg/60">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <FileCheck size={15} className="text-primary shrink-0" />
-                      <div className="min-w-0">
-                        <p className="text-[11px] text-brand-secondarytext font-normal">Portfolio File</p>
-                        <p className="text-xs font-normal text-brand-deeptext truncate">{ex.portfolioFileName}</p>
-                      </div>
-                    </div>
-                    <CopyButton text={ex.portfolioFileName} label="Portfolio File Name" />
-                  </div>
+                  <DocumentRow label="Portfolio File" url={ex.portfolioFileName} icon={FileCheck} />
                 )}
 
                 {ai.idFrontFileName && (
-                  <div className="flex items-center justify-between p-2.5 rounded-lg border border-brand-border/80 bg-brand-softbg/60">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <ShieldCheck size={15} className="text-primary shrink-0" />
-                      <div className="min-w-0">
-                        <p className="text-[11px] text-brand-secondarytext font-normal">ID Document (Front)</p>
-                        <p className="text-xs font-normal text-brand-deeptext truncate">{ai.idFrontFileName}</p>
-                      </div>
-                    </div>
-                    <CopyButton text={ai.idFrontFileName} label="ID Front File Name" />
-                  </div>
+                  <DocumentRow label="ID Document (Front)" url={ai.idFrontFileName} icon={ShieldCheck} />
                 )}
 
                 {ai.idBackFileName && (
-                  <div className="flex items-center justify-between p-2.5 rounded-lg border border-brand-border/80 bg-brand-softbg/60">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <ShieldCheck size={15} className="text-primary shrink-0" />
-                      <div className="min-w-0">
-                        <p className="text-[11px] text-brand-secondarytext font-normal">ID Document (Back)</p>
-                        <p className="text-xs font-normal text-brand-deeptext truncate">{ai.idBackFileName}</p>
-                      </div>
-                    </div>
-                    <CopyButton text={ai.idBackFileName} label="ID Back File Name" />
-                  </div>
+                  <DocumentRow label="ID Document (Back)" url={ai.idBackFileName} icon={ShieldCheck} />
                 )}
 
                 {ai.ssnCardFileName && (
-                  <div className="flex items-center justify-between p-2.5 rounded-lg border border-brand-border/80 bg-brand-softbg/60">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <CheckCircle size={15} className="text-primary shrink-0" />
-                      <div className="min-w-0">
-                        <p className="text-[11px] text-brand-secondarytext font-normal">SSN Card Document</p>
-                        <p className="text-xs font-normal text-brand-deeptext truncate">{ai.ssnCardFileName}</p>
-                      </div>
-                    </div>
-                    <CopyButton text={ai.ssnCardFileName} label="SSN Card File Name" />
-                  </div>
+                  <DocumentRow label="SSN Card Document" url={ai.ssnCardFileName} icon={CheckCircle} />
                 )}
               </div>
             </div>
