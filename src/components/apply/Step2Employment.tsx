@@ -50,27 +50,17 @@ export default function Step2Employment({ defaultValues, onNext, onBack }: Props
           </p>
           <div className="flex flex-wrap gap-2 mt-1">
             {(['yes', 'no'] as const).map((val) => (
-              <label key={val} className="flex items-center gap-2 cursor-pointer">
+              <label
+                key={val}
+                className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg border border-brand-border bg-white text-sm font-medium text-brand-secondarytext hover:border-primary hover:text-primary hover:bg-primary/5 transition-all cursor-pointer has-[:checked]:border-primary has-[:checked]:text-primary has-[:checked]:bg-primary/10 select-none"
+              >
                 <input
                   type="radio"
                   value={val}
                   {...register('currentlyEmployed')}
-                  className="sr-only"
-                  id={`employed-${val}`}
+                  className="accent-primary w-4 h-4 cursor-pointer"
                 />
-                <label
-                  htmlFor={`employed-${val}`}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-brand-border bg-white text-sm font-medium text-brand-secondarytext hover:border-primary hover:text-primary hover:bg-primary/5 transition-all cursor-pointer has-[:checked]:border-primary has-[:checked]:text-primary has-[:checked]:bg-primary/10"
-                >
-                  <input
-                    type="radio"
-                    value={val}
-                    {...register('currentlyEmployed')}
-                    className="accent-primary w-3.5 h-3.5"
-                    id={`employed-${val}-inner`}
-                  />
-                  {val === 'yes' ? 'Yes' : 'No'}
-                </label>
+                <span className="cursor-pointer">{val === 'yes' ? 'Yes' : 'No'}</span>
               </label>
             ))}
           </div>

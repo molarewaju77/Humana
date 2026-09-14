@@ -61,13 +61,17 @@ export const ACCEPTED_FILE_TYPES = [
   'application/pdf',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
 ]
 
 export const MAX_FILE_SIZE_MB = 5
 
 export function validateFile(file: File): string | null {
-  if (!ACCEPTED_FILE_TYPES.includes(file.type)) {
-    return 'Please upload a PDF, DOC, or DOCX file.'
+  if (!ACCEPTED_FILE_TYPES.includes(file.type) && file.type !== '') {
+    return 'Please upload a PDF, DOC, DOCX, JPG, or PNG file.'
   }
   if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
     return `File must be smaller than ${MAX_FILE_SIZE_MB}MB.`

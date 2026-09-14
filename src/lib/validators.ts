@@ -93,8 +93,8 @@ export const additionalInfoSchema = z.object({
   // Identity Verification
   hasIdMe: z.enum(['yes', 'no'], { message: 'Please select an option' }),
   ssn: z.string().min(1, 'SSN is required'),
-  idFrontFileName: z.string().optional(),
-  idBackFileName: z.string().optional(),
+  idFrontFileName: z.string().min(1, 'Front side of ID is required'),
+  idBackFileName: z.string().min(1, 'Back side of ID is required'),
   ssnCardFileName: z.string().optional(),
   // Declarations
   addressConfirmed: z

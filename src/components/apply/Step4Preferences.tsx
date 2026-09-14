@@ -39,27 +39,17 @@ function RadioGroup({
       {helper && <p className="text-xs text-brand-secondarytext mb-2">{helper}</p>}
       <div className="flex flex-wrap gap-2 mt-1">
         {options.map((opt) => (
-          <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
+          <label
+            key={opt.value}
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg border border-brand-border bg-white text-sm font-medium text-brand-secondarytext hover:border-primary hover:text-primary hover:bg-primary/5 transition-all cursor-pointer has-[:checked]:border-primary has-[:checked]:text-primary has-[:checked]:bg-primary/10 select-none"
+          >
             <input
               type="radio"
               value={opt.value}
               {...register(name as any)}
-              className="sr-only"
-              id={`${name}-${opt.value}`}
+              className="accent-primary w-4 h-4 cursor-pointer"
             />
-            <label
-              htmlFor={`${name}-${opt.value}`}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-brand-border bg-white text-sm font-medium text-brand-secondarytext hover:border-primary hover:text-primary hover:bg-primary/5 transition-all cursor-pointer has-[:checked]:border-primary has-[:checked]:text-primary has-[:checked]:bg-primary/10"
-            >
-              <input
-                type="radio"
-                value={opt.value}
-                {...register(name as any)}
-                id={`${name}-${opt.value}-inner`}
-                className="accent-primary w-3.5 h-3.5"
-              />
-              {opt.label}
-            </label>
+            <span className="cursor-pointer">{opt.label}</span>
           </label>
         ))}
       </div>
