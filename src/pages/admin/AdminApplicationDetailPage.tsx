@@ -290,7 +290,7 @@ export default function AdminApplicationDetailPage() {
             <DetailRow label="Flexible Hours" value={wp.flexibleHours === 'yes' ? 'Yes' : 'No'} />
             <DetailRow
               label="Work Arrangement"
-              value={wp.workArrangement === 'remote' ? 'Remote' : wp.workArrangement === 'hybrid' ? 'Hybrid' : 'On-site'}
+              value={wp.workArrangement === 'remote' ? 'Remote' : wp.workArrangement === 'hybrid' ? 'Hybrid' : wp.workArrangement || 'N/A'}
             />
             <DetailRow label="Role Preference" value={wp.roleType} />
             <DetailRow label="Tenure Intent" value={wp.tenureIntent} />

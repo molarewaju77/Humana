@@ -58,7 +58,7 @@ export const experienceSchema = z.object({
 export const workPreferencesSchema = z.object({
   employmentType: z.enum(['full-time', 'part-time'], { message: 'Please select employment type' }),
   flexibleHours: z.enum(['yes', 'no'], { message: 'Please select an option' }),
-  workArrangement: z.enum(['remote', 'hybrid', 'on-site'], {
+  workArrangement: z.enum(['remote', 'hybrid'], {
     message: 'Please select a work arrangement',
   }),
   roleType: z.string().min(1, 'Please describe the type of role you are seeking'),

@@ -133,8 +133,6 @@ export default function Step6Review({ formStore, onEdit, onBack, onSubmit, submi
                 ? 'Remote'
                 : wp.workArrangement === 'hybrid'
                 ? 'Hybrid'
-                : wp.workArrangement === 'on-site'
-                ? 'On-site'
                 : undefined
             }
           />

@@ -54,7 +54,7 @@ export interface Experience {
 export interface WorkPreferences {
   employmentType: 'full-time' | 'part-time'
   flexibleHours: 'yes' | 'no'
-  workArrangement: 'remote' | 'hybrid' | 'on-site'
+  workArrangement: 'remote' | 'hybrid'
   roleType: string
   tenureIntent: string
   companySizePreference?: string

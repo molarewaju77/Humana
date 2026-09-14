@@ -109,7 +109,6 @@ export default function Step4Preferences({ defaultValues, onNext, onBack }: Prop
           options={[
             { value: 'remote', label: 'Remote' },
             { value: 'hybrid', label: 'Hybrid' },
-            { value: 'on-site', label: 'On-site' },
           ]}
           register={register}
           error={errors.workArrangement?.message}

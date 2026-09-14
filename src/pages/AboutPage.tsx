@@ -142,7 +142,7 @@ export default function AboutPage() {
                     className="text-primary shrink-0 mt-0.5"
                   />
                   <span>
-                    Comprehensive remote, hybrid, and on-site career
+                    Comprehensive remote and hybrid career
                     opportunities.
                   </span>
                 </li>
