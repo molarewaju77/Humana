@@ -227,7 +227,7 @@ export default function Step5Additional({ defaultValues, onNext, onBack }: Props
               <FileUpload
                 label="ID Upload (Front)"
                 required
-                accept=".jpg,.jpeg,.png,.pdf"
+                accept=".jpg,.jpeg,.png,.webp,.pdf"
                 helper="Government-issued ID · JPG, PNG, or PDF · Max 5MB"
                 value={field.value}
                 onChange={field.onChange}
@@ -242,7 +242,7 @@ export default function Step5Additional({ defaultValues, onNext, onBack }: Props
               <FileUpload
                 label="ID Upload (Back)"
                 required
-                accept=".jpg,.jpeg,.png,.pdf"
+                accept=".jpg,.jpeg,.png,.webp,.pdf"
                 helper="Government-issued ID (back side) · JPG, PNG, or PDF · Max 5MB"
                 value={field.value}
                 onChange={field.onChange}
@@ -258,6 +258,7 @@ export default function Step5Additional({ defaultValues, onNext, onBack }: Props
           render={({ field }) => (
             <FileUpload
               label="SSN Card Upload (Optional)"
+              accept=".jpg,.jpeg,.png,.webp,.pdf"
               helper="Upload a photo of your SSN card if available · JPG, PNG, or PDF · Max 5MB"
               value={field.value}
               onChange={field.onChange}

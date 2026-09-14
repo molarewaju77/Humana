@@ -19,7 +19,7 @@ export default function FileUpload({
   helper,
   value,
   onChange,
-  accept = '.pdf,.doc,.docx',
+  accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.webp',
 }: FileUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragActive, setDragActive] = useState(false)
@@ -111,7 +111,7 @@ export default function FileUpload({
             <p className="text-sm font-semibold text-brand-deeptext">
               {dragActive ? 'Drop to upload' : 'Click to upload or drag and drop'}
             </p>
-            <p className="text-xs text-brand-secondarytext mt-1">PDF, DOC, DOCX · Max {5}MB</p>
+            <p className="text-xs text-brand-secondarytext mt-1">PDF, DOC, DOCX, JPG, PNG · Max 5MB</p>
           </div>
         </div>
       )}

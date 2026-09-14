@@ -163,7 +163,7 @@ export default function Step3Experience({ defaultValues, onNext, onBack }: Props
           render={({ field }) => (
             <FileUpload
               label="Upload Resume"
-              helper="PDF, DOC, or DOCX · Maximum 5MB"
+              helper="PDF, DOC, DOCX, JPG, or PNG · Maximum 5MB"
               value={field.value}
               onChange={field.onChange}
               error={errors.resumeFileName?.message}
@@ -178,7 +178,7 @@ export default function Step3Experience({ defaultValues, onNext, onBack }: Props
             render={({ field }) => (
               <FileUpload
                 label="Upload Portfolio (Optional)"
-                helper="Supporting work samples · PDF, DOC, or DOCX · Maximum 5MB"
+                helper="Supporting work samples · PDF, DOC, DOCX, JPG, or PNG · Maximum 5MB"
                 value={field.value}
                 onChange={field.onChange}
               />

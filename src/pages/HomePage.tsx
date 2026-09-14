@@ -42,9 +42,9 @@ const trustFeatures = [
   },
   {
     icon: Clock,
-    title: "Generous PTO & Work-Life Balance",
+    title: "Remote-First Flexibility & Generous PTO",
     description:
-      "Flexible paid time off, paid parental and caregiver leave, dedicated volunteer hours, and hybrid work arrangements.",
+      "Work from anywhere with home office equipment support, flexible paid time off, paid caregiver leave, and dedicated volunteer hours.",
   },
 ];
 
@@ -121,9 +121,9 @@ const benefits = [
   },
   {
     icon: Clock,
-    title: "Generous PTO & Flexibility",
+    title: "Remote-First Work & Generous PTO",
     description:
-      "Flexible paid time off, paid caregiver leave, volunteer days, and supportive hybrid work environments.",
+      "100% remote flexibility with home office support, flexible paid time off, and paid caregiver leave.",
   },
 ];
 
@@ -189,7 +189,7 @@ export default function HomePage() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
                   <span className="relative inline-flex rounded-full size-2 bg-primary" />
                 </span>
-                <span>Now Hiring for 2026 Clinical & Corporate Openings</span>
+                <span>Now Hiring: 100% Remote & Flexible Openings for 2026</span>
               </div>
 
               {/* Title with generous spacing */}
@@ -203,7 +203,7 @@ export default function HomePage() {
               {/* Description with generous spacing and relaxed line height */}
               <p className="mt-6 sm:mt-7 text-base sm:text-lg text-brand-secondarytext leading-relaxed max-w-xl font-normal">
                 Connect your passion for healthcare, clinical excellence, and
-                innovation with an organisation trusted by millions. One
+                innovation with remote-first flexibility and day-one comprehensive benefits. One
                 streamlined application unlocks direct consideration across all
                 departments.
               </p>

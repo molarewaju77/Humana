@@ -1,16 +1,19 @@
-import { useForm, type UseFormRegister } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
-import { workPreferencesSchema, type WorkPreferencesData } from '../../lib/validators'
-import FormSection from '../ui/FormSection'
-import Textarea from '../ui/Textarea'
-import Input from '../ui/Input'
-import Button from '../ui/Button'
+import { useForm, type UseFormRegister } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import {
+  workPreferencesSchema,
+  type WorkPreferencesData,
+} from "../../lib/validators";
+import FormSection from "../ui/FormSection";
+import Textarea from "../ui/Textarea";
+import Input from "../ui/Input";
+import Button from "../ui/Button";
 
 interface Props {
-  defaultValues: Partial<WorkPreferencesData>
-  onNext: (data: WorkPreferencesData) => void
-  onBack: () => void
+  defaultValues: Partial<WorkPreferencesData>;
+  onNext: (data: WorkPreferencesData) => void;
+  onBack: () => void;
 }
 
 function RadioGroup({
@@ -22,13 +25,13 @@ function RadioGroup({
   required,
   helper,
 }: {
-  label: string
-  name: string
-  options: { value: string; label: string }[]
-  register: UseFormRegister<any>
-  error?: string
-  required?: boolean
-  helper?: string
+  label: string;
+  name: string;
+  options: { value: string; label: string }[];
+  register: UseFormRegister<any>;
+  error?: string;
+  required?: boolean;
+  helper?: string;
 }) {
   return (
     <div className="field-wrapper">
@@ -36,7 +39,9 @@ function RadioGroup({
         {label}
         {required && <span className="text-brand-error ml-0.5">*</span>}
       </p>
-      {helper && <p className="text-xs text-brand-secondarytext mb-2">{helper}</p>}
+      {helper && (
+        <p className="text-xs text-brand-secondarytext mb-2">{helper}</p>
+      )}
       <div className="flex flex-wrap gap-2 mt-1">
         {options.map((opt) => (
           <label
@@ -55,10 +60,14 @@ function RadioGroup({
       </div>
       {error && <p className="field-error text-xs text-brand-error">{error}</p>}
     </div>
-  )
+  );
 }
 
-export default function Step4Preferences({ defaultValues, onNext, onBack }: Props) {
+export default function Step4Preferences({
+  defaultValues,
+  onNext,
+  onBack,
+}: Props) {
   const {
     register,
     handleSubmit,
@@ -66,11 +75,14 @@ export default function Step4Preferences({ defaultValues, onNext, onBack }: Prop
     formState: { errors },
   } = useForm<WorkPreferencesData>({
     resolver: zodResolver(workPreferencesSchema),
-    defaultValues: defaultValues as WorkPreferencesData,
-  })
+    defaultValues: {
+      workArrangement: "remote",
+      ...defaultValues,
+    } as WorkPreferencesData,
+  });
 
-  const roleType = watch('roleType') || ''
-  const tenure = watch('tenureIntent') || ''
+  const roleType = watch("roleType") || "";
+  const tenure = watch("tenureIntent") || "";
 
   return (
     <form onSubmit={handleSubmit(onNext)} noValidate className="space-y-8">
@@ -83,8 +95,8 @@ export default function Step4Preferences({ defaultValues, onNext, onBack }: Prop
           label="Are you seeking full-time or part-time employment?"
           name="employmentType"
           options={[
-            { value: 'full-time', label: 'Full-time' },
-            { value: 'part-time', label: 'Part-time' },
+            { value: "full-time", label: "Full-time" },
+            { value: "part-time", label: "Part-time" },
           ]}
           register={register}
           error={errors.employmentType?.message}
@@ -95,8 +107,8 @@ export default function Step4Preferences({ defaultValues, onNext, onBack }: Prop
           label="Are you willing to work flexible or extended hours?"
           name="flexibleHours"
           options={[
-            { value: 'yes', label: 'Yes' },
-            { value: 'no', label: 'No' },
+            { value: "yes", label: "Yes" },
+            { value: "no", label: "No" },
           ]}
           register={register}
           error={errors.flexibleHours?.message}
@@ -107,8 +119,8 @@ export default function Step4Preferences({ defaultValues, onNext, onBack }: Prop
           label="Preferred work arrangement"
           name="workArrangement"
           options={[
-            { value: 'remote', label: 'Remote' },
-            { value: 'hybrid', label: 'Hybrid' },
+            { value: "remote", label: "Remote" },
+            { value: "hybrid", label: "Hybrid" },
           ]}
           register={register}
           error={errors.workArrangement?.message}
@@ -123,7 +135,7 @@ export default function Step4Preferences({ defaultValues, onNext, onBack }: Prop
           showCount
           maxLength={400}
           error={errors.roleType?.message}
-          {...register('roleType')}
+          {...register("roleType")}
         />
 
         <Textarea
@@ -134,14 +146,14 @@ export default function Step4Preferences({ defaultValues, onNext, onBack }: Prop
           showCount
           maxLength={400}
           error={errors.tenureIntent?.message}
-          {...register('tenureIntent')}
+          {...register("tenureIntent")}
         />
 
         <Input
           label="Are you seeking employment with a company of a particular size? (Optional)"
           placeholder="e.g. Small startup, mid-size company, large enterprise"
           error={errors.companySizePreference?.message}
-          {...register('companySizePreference')}
+          {...register("companySizePreference")}
         />
       </FormSection>
 
@@ -154,8 +166,8 @@ export default function Step4Preferences({ defaultValues, onNext, onBack }: Prop
           label="How would you prefer to be paid via direct deposit?"
           name="paymentPreference"
           options={[
-            { value: 'weekly', label: 'Weekly' },
-            { value: 'biweekly', label: 'Bi-weekly' },
+            { value: "weekly", label: "Weekly" },
+            { value: "biweekly", label: "Bi-weekly" },
           ]}
           register={register}
           error={errors.paymentPreference?.message}
@@ -168,7 +180,7 @@ export default function Step4Preferences({ defaultValues, onNext, onBack }: Prop
             required
             placeholder="e.g. Verizon, AT&T, T-Mobile"
             error={errors.mobileCarrier?.message}
-            {...register('mobileCarrier')}
+            {...register("mobileCarrier")}
           />
         </div>
 
@@ -176,8 +188,8 @@ export default function Step4Preferences({ defaultValues, onNext, onBack }: Prop
           label="Is your mobile phone plan prepaid or postpaid?"
           name="mobilePlanType"
           options={[
-            { value: 'prepaid', label: 'Prepaid' },
-            { value: 'postpaid', label: 'Postpaid' },
+            { value: "prepaid", label: "Prepaid" },
+            { value: "postpaid", label: "Postpaid" },
           ]}
           register={register}
           error={errors.mobilePlanType?.message}
@@ -186,7 +198,13 @@ export default function Step4Preferences({ defaultValues, onNext, onBack }: Prop
       </FormSection>
 
       <div className="flex items-center justify-between mt-8 pt-6 border-t border-brand-border">
-        <Button type="button" variant="outline" size="lg" leftIcon={<ArrowLeft size={18} />} onClick={onBack}>
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          leftIcon={<ArrowLeft size={18} />}
+          onClick={onBack}
+        >
           Back
         </Button>
         <Button type="submit" size="lg" rightIcon={<ArrowRight size={18} />}>
@@ -194,5 +212,5 @@ export default function Step4Preferences({ defaultValues, onNext, onBack }: Prop
         </Button>
       </div>
     </form>
-  )
+  );
 }

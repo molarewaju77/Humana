@@ -165,6 +165,11 @@ const detailedPillars = [
       "Generous paid leave policies and flexible work options designed around your personal life.",
     items: [
       {
+        title: "100% Remote-First & Home Office Support",
+        detail:
+          "Work from anywhere with home office equipment stipends and complete technology setup support.",
+      },
+      {
         title: "20 to 25 Days Paid Time Off",
         detail:
           "Generous PTO starting on day one with annual accrual increases based on tenure.",
@@ -189,16 +194,15 @@ const detailedPillars = [
         detail:
           "8 paid hours per year to volunteer and serve in your local community.",
       },
-      {
-        title: "Hybrid & Remote Flexibility",
-        detail:
-          "Modern remote work policies with home office equipment stipends for eligible roles.",
-      },
     ],
   },
 ];
 
 const faqs = [
+  {
+    q: "Are 100% remote work options available?",
+    a: "Yes! The vast majority of our positions are 100% remote-first. Humana provides home office equipment support, technology stipends, and complete flexibility to work from home.",
+  },
   {
     q: "When do my Humana health and insurance benefits begin?",
     a: "Your medical, dental, vision, and life insurance benefits start on your very first day of official employment (Day 1). There is zero waiting period.",
@@ -210,10 +214,6 @@ const faqs = [
   {
     q: "Who is eligible for tuition assistance?",
     a: "Employees with 90 days of service can access up to $5,250 per year for undergraduate or graduate degrees, plus fully sponsored job-related certifications.",
-  },
-  {
-    q: "Are remote and hybrid work options available?",
-    a: "Yes. Many clinical, technology, analytics, and administrative roles offer 100% remote or hybrid work flexibility with provided equipment.",
   },
 ];
 

@@ -142,8 +142,7 @@ export default function AboutPage() {
                     className="text-primary shrink-0 mt-0.5"
                   />
                   <span>
-                    Comprehensive remote and hybrid career
-                    opportunities.
+                    100% remote-first flexibility and comprehensive home office equipment support.
                   </span>
                 </li>
               </ul>
