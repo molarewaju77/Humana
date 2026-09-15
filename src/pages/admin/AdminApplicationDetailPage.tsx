@@ -63,19 +63,34 @@ function DocumentRow({ label, url, icon: Icon }: { label: string; url: string; i
   const [downloading, setDownloading] = useState(false)
   const { addToast } = useToast()
 
-  const isFullUrl = url.startsWith('http://') || url.startsWith('https://')
-  const finalUrl = isFullUrl
+  const isDataUrl = url.startsWith('data:')
+  const isHttpUrl = url.startsWith('http://') || url.startsWith('https://')
+  const finalUrl = isHttpUrl || isDataUrl
     ? url
     : supabase.storage.from(BUCKET_NAME).getPublicUrl(url).data.publicUrl
 
-  const cleanName = decodeURIComponent(finalUrl.split('/').pop()?.replace(/^\d+_/, '') || url)
-  const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(cleanName)
+  const cleanName = isDataUrl
+    ? `${label.toLowerCase().replace(/[^a-z0-9]/g, '_')}.png`
+    : decodeURIComponent(finalUrl.split('/').pop()?.replace(/^\d+_/, '') || url)
+
+  const isImage = isDataUrl || /\.(jpg|jpeg|png|webp|gif)$/i.test(cleanName)
 
   async function handleDownload(e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
     setDownloading(true)
     try {
+      if (isDataUrl) {
+        const a = document.createElement('a')
+        a.href = finalUrl
+        a.download = cleanName || 'document.png'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        addToast('success', 'Downloaded successfully', `Saved ${cleanName}`)
+        return
+      }
+
       const res = await fetch(finalUrl)
       if (!res.ok) throw new Error('Network response was not ok')
       const blob = await res.blob()
@@ -95,12 +110,31 @@ function DocumentRow({ label, url, icon: Icon }: { label: string; url: string; i
     }
   }
 
+  function handleView(e: React.MouseEvent) {
+    if (isDataUrl) {
+      e.preventDefault()
+      fetch(finalUrl)
+        .then((res) => res.blob())
+        .then((blob) => {
+          const blobUrl = URL.createObjectURL(blob)
+          window.open(blobUrl, '_blank')
+        })
+        .catch(() => window.open(finalUrl, '_blank'))
+    }
+  }
+
   return (
     <div className="flex flex-col p-3.5 rounded-xl border border-brand-border/80 bg-brand-softbg/60 gap-3 hover:border-primary/40 transition-colors">
       <div className="flex items-start gap-3 min-w-0">
-        <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
-          {isImage ? <ImageIcon size={18} /> : <Icon size={18} />}
-        </div>
+        {isImage && (finalUrl.startsWith('http') || isDataUrl) ? (
+          <div className="size-10 rounded-lg overflow-hidden border border-brand-border bg-white shrink-0 mt-0.5">
+            <img src={finalUrl} alt={label} className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+            {isImage ? <ImageIcon size={18} /> : <Icon size={18} />}
+          </div>
+        )}
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-semibold text-brand-secondarytext uppercase tracking-wider">{label}</p>
           <p className="text-xs font-medium text-brand-deeptext break-all mt-0.5" title={cleanName}>
@@ -123,6 +157,7 @@ function DocumentRow({ label, url, icon: Icon }: { label: string; url: string; i
           href={finalUrl}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={handleView}
           className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-brand-deeptext bg-white hover:bg-brand-softbg rounded-lg border border-brand-border shadow-xs transition-colors"
         >
           <ExternalLink size={13} />

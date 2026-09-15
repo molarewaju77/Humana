@@ -162,6 +162,7 @@ export default function Step3Experience({ defaultValues, onNext, onBack }: Props
           control={control}
           render={({ field }) => (
             <FileUpload
+              name="resumeFileName"
               label="Upload Resume"
               helper="PDF, DOC, DOCX, JPG, or PNG · Maximum 5MB"
               value={field.value}
@@ -177,6 +178,7 @@ export default function Step3Experience({ defaultValues, onNext, onBack }: Props
             control={control}
             render={({ field }) => (
               <FileUpload
+                name="portfolioFileName"
                 label="Upload Portfolio (Optional)"
                 helper="Supporting work samples · PDF, DOC, DOCX, JPG, or PNG · Maximum 5MB"
                 value={field.value}

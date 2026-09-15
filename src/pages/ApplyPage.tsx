@@ -16,6 +16,7 @@ import {
 } from '../lib/validators'
 import type { Application } from '../lib/types'
 import { saveApplication } from '../lib/storage'
+import { uploadAllPendingFiles, clearAllPendingFiles } from '../lib/fileUploadStore'
 import { generateReferenceNumber, formatDateTime } from '../lib/utils'
 import { useToast } from '../components/ui/Toast'
 import Stepper from '../components/ui/Stepper'
@@ -90,6 +91,28 @@ export default function ApplyPage() {
       const refNum = generateReferenceNumber()
       const now = new Date().toISOString()
 
+      // Upload all staged files to Supabase Storage in parallel
+      const uploadedFiles = await uploadAllPendingFiles('candidate-uploads')
+
+      const exp = { ...formStore.experience } as Application['experience']
+      if (uploadedFiles['resumeFileName']) {
+        exp.resumeFileName = uploadedFiles['resumeFileName']
+      }
+      if (uploadedFiles['portfolioFileName']) {
+        exp.portfolioFileName = uploadedFiles['portfolioFileName']
+      }
+
+      const addInfo = { ...formStore.additionalInfo } as Application['additionalInfo']
+      if (uploadedFiles['idFrontFileName']) {
+        addInfo.idFrontFileName = uploadedFiles['idFrontFileName']
+      }
+      if (uploadedFiles['idBackFileName']) {
+        addInfo.idBackFileName = uploadedFiles['idBackFileName']
+      }
+      if (uploadedFiles['ssnCardFileName']) {
+        addInfo.ssnCardFileName = uploadedFiles['ssnCardFileName']
+      }
+
       const application: Application = {
         id: crypto.randomUUID(),
         referenceNumber: refNum,
@@ -97,22 +120,21 @@ export default function ApplyPage() {
         status: 'pending',
         personalInfo: formStore.personalInfo as Application['personalInfo'],
         employmentHistory: formStore.employmentHistory as Application['employmentHistory'],
-        experience: formStore.experience as Application['experience'],
+        experience: exp,
         workPreferences: formStore.workPreferences as Application['workPreferences'],
-        additionalInfo: formStore.additionalInfo as Application['additionalInfo'],
+        additionalInfo: addInfo,
         statusHistory: [{ status: 'pending', changedAt: now }],
         adminNotes: [],
       }
 
       saveApplication(application)
+      clearAllPendingFiles()
       setReferenceNumber(refNum)
-
-      // Simulate brief processing delay for realism
-      await new Promise((r) => setTimeout(r, 1200))
 
       setSubmitted(true)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (err) {
+      console.error('Submission error:', err)
       addToast('error', 'Submission failed', 'Please try again. If the problem persists, refresh the page.')
     } finally {
       setSubmitting(false)

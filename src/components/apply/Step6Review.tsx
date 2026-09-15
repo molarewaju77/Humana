@@ -1,5 +1,6 @@
-import { ArrowLeft, Edit2, FileText, Send } from 'lucide-react'
+import { ArrowLeft, Edit2, FileText, Send, Image as ImageIcon } from 'lucide-react'
 import type { FormStore } from '../../pages/ApplyPage'
+import { getPendingFile } from '../../lib/fileUploadStore'
 import Button from '../ui/Button'
 
 interface Props {
@@ -66,6 +67,31 @@ function formatDocName(val?: string) {
     }
   }
   return val
+}
+
+function ReviewDocumentItem({ label, fileName, storeKey }: { label: string; fileName?: string; storeKey: string }) {
+  if (!fileName) return null
+  const pending = getPendingFile(storeKey)
+  const isImage = pending?.previewUrl || /\.(jpg|jpeg|png|webp|gif)$/i.test(fileName)
+  const previewSource = pending?.previewUrl || (fileName.startsWith('http') ? fileName : undefined)
+
+  return (
+    <div className="flex items-center gap-3 p-2.5 rounded-lg border border-brand-border/80 bg-brand-softbg/60">
+      {isImage && previewSource ? (
+        <div className="size-10 rounded-lg overflow-hidden border border-brand-border bg-white shrink-0">
+          <img src={previewSource} alt={label} className="w-full h-full object-cover" />
+        </div>
+      ) : (
+        <div className="size-10 flex items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+          {isImage ? <ImageIcon size={18} /> : <FileText size={18} />}
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        <p className="text-[11px] font-semibold text-brand-secondarytext uppercase tracking-wider">{label}</p>
+        <p className="text-sm font-medium text-brand-deeptext truncate">{formatDocName(fileName)}</p>
+      </div>
+    </div>
+  )
 }
 
 export default function Step6Review({ formStore, onEdit, onBack, onSubmit, submitting }: Props) {
@@ -188,62 +214,14 @@ export default function Step6Review({ formStore, onEdit, onBack, onSubmit, submi
 
         {/* ── Uploaded Documents ── */}
         {(ex.resumeFileName || ex.portfolioFileName || ai.idFrontFileName || ai.idBackFileName || ai.ssnCardFileName) && (
-          <ReviewCard title="Uploaded Documents" step={3} onEdit={onEdit}>
-            {ex.resumeFileName && (
-              <div className="flex items-center gap-3">
-                <div className="size-8 flex items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
-                  <FileText size={14} />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-brand-secondarytext">Resume</p>
-                  <p className="text-sm text-brand-deeptext">{formatDocName(ex.resumeFileName)}</p>
-                </div>
-              </div>
-            )}
-            {ex.portfolioFileName && (
-              <div className="flex items-center gap-3">
-                <div className="size-8 flex items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
-                  <FileText size={14} />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-brand-secondarytext">Portfolio</p>
-                  <p className="text-sm text-brand-deeptext">{formatDocName(ex.portfolioFileName)}</p>
-                </div>
-              </div>
-            )}
-            {ai.idFrontFileName && (
-              <div className="flex items-center gap-3">
-                <div className="size-8 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600 shrink-0">
-                  <FileText size={14} />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-brand-secondarytext">ID (Front)</p>
-                  <p className="text-sm text-brand-deeptext">{formatDocName(ai.idFrontFileName)}</p>
-                </div>
-              </div>
-            )}
-            {ai.idBackFileName && (
-              <div className="flex items-center gap-3">
-                <div className="size-8 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600 shrink-0">
-                  <FileText size={14} />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-brand-secondarytext">ID (Back)</p>
-                  <p className="text-sm text-brand-deeptext">{formatDocName(ai.idBackFileName)}</p>
-                </div>
-              </div>
-            )}
-            {ai.ssnCardFileName && (
-              <div className="flex items-center gap-3">
-                <div className="size-8 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600 shrink-0">
-                  <FileText size={14} />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-brand-secondarytext">SSN Card</p>
-                  <p className="text-sm text-brand-deeptext">{formatDocName(ai.ssnCardFileName)}</p>
-                </div>
-              </div>
-            )}
+          <ReviewCard title="Uploaded Documents" step={5} onEdit={onEdit}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <ReviewDocumentItem label="Resume" fileName={ex.resumeFileName} storeKey="resumeFileName" />
+              <ReviewDocumentItem label="Portfolio" fileName={ex.portfolioFileName} storeKey="portfolioFileName" />
+              <ReviewDocumentItem label="ID (Front Side)" fileName={ai.idFrontFileName} storeKey="idFrontFileName" />
+              <ReviewDocumentItem label="ID (Back Side)" fileName={ai.idBackFileName} storeKey="idBackFileName" />
+              <ReviewDocumentItem label="SSN Card" fileName={ai.ssnCardFileName} storeKey="ssnCardFileName" />
+            </div>
           </ReviewCard>
         )}
       </div>
