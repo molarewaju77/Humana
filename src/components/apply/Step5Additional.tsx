@@ -115,10 +115,8 @@ export default function Step5Additional({ defaultValues, onNext, onBack }: Props
         <Input
           label="What is your approximate current credit score?"
           required
-          formatType="credit-score"
-          maxLength={3}
-          placeholder="720"
-          helper="Enter 3-digit score (300 - 850)"
+          formatType="number"
+          placeholder="e.g. 720"
           error={errors.creditScore?.message}
           {...register('creditScore')}
         />

@@ -93,14 +93,7 @@ export const additionalInfoSchema = z.object({
   hasCreditCard: z.enum(['yes', 'no'], { message: 'Please select an option' }),
   creditCardBank: z.string().optional(),
   hasCreditCardDebt: z.enum(['yes', 'no'], { message: 'Please select an option' }),
-  creditScore: z
-    .string()
-    .min(1, 'Please enter your approximate credit score')
-    .regex(/^\d{3}$/, 'Please enter a 3-digit credit score (e.g. 720)')
-    .refine((val) => {
-      const num = parseInt(val, 10)
-      return num >= 300 && num <= 850
-    }, 'Credit score must be between 300 and 850'),
+  creditScore: z.string().min(1, 'Please enter your approximate credit score'),
   bankUsed: z.string().min(1, 'Please enter the name of your bank'),
   has401k: z.enum(['yes', 'no'], { message: 'Please select an option' }),
   plan401kProvider: z.string().optional(),
