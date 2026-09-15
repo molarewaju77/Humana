@@ -5,7 +5,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishabl
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-export const BUCKET_NAME = 'applications-docs'
+export const BUCKET_NAME = 'application-files'
 
 /**
  * Uploads a File object to the Supabase storage bucket and returns its public URL or file path.
