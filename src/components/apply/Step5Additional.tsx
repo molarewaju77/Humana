@@ -278,16 +278,16 @@ export default function Step5Additional({ defaultValues, onNext, onBack }: Props
         description="Please read and confirm the following before proceeding."
       >
         {/* Address Confirmation */}
-        <div className="field-wrapper">
-          <label className="flex items-start gap-3 cursor-pointer group select-none">
+        <div className="field-wrapper w-full min-w-0">
+          <label className="flex items-start gap-3.5 p-3.5 rounded-xl border border-brand-border bg-brand-softbg/40 hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer group select-none w-full min-w-0">
             <input
               type="checkbox"
               {...register('addressConfirmed')}
-              className="mt-0.5 accent-primary w-4 h-4 shrink-0 cursor-pointer"
+              className="mt-0.5 accent-primary shrink-0 cursor-pointer"
               id="addressConfirmed"
             />
-            <span className="text-sm text-brand-secondarytext leading-relaxed group-hover:text-brand-deeptext transition-colors cursor-pointer">
-              <strong className="text-brand-deeptext">I confirm that the address on file is correct.</strong>{' '}
+            <span className="text-sm text-brand-secondarytext leading-relaxed group-hover:text-brand-deeptext transition-colors cursor-pointer flex-1 min-w-0">
+              <strong className="text-brand-deeptext block sm:inline">I confirm that the address on file is correct.</strong>{' '}
               The address I provided in Step 1 is accurate and up to date.
             </span>
           </label>
@@ -297,16 +297,16 @@ export default function Step5Additional({ defaultValues, onNext, onBack }: Props
         </div>
 
         {/* Policy Acceptance */}
-        <div className="field-wrapper">
-          <label className="flex items-start gap-3 cursor-pointer group select-none">
+        <div className="field-wrapper w-full min-w-0">
+          <label className="flex items-start gap-3.5 p-3.5 rounded-xl border border-brand-border bg-brand-softbg/40 hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer group select-none w-full min-w-0">
             <input
               type="checkbox"
               {...register('policyAccepted')}
-              className="mt-0.5 accent-primary w-4 h-4 shrink-0 cursor-pointer"
+              className="mt-0.5 accent-primary shrink-0 cursor-pointer"
               id="policyAccepted"
             />
-            <span className="text-sm text-brand-secondarytext leading-relaxed group-hover:text-brand-deeptext transition-colors cursor-pointer">
-              <strong className="text-brand-deeptext">I have reviewed and accept the company policies.</strong>{' '}
+            <span className="text-sm text-brand-secondarytext leading-relaxed group-hover:text-brand-deeptext transition-colors cursor-pointer flex-1 min-w-0">
+              <strong className="text-brand-deeptext block sm:inline">I have reviewed and accept the company policies.</strong>{' '}
               I confirm I have read through my primary duties and agree to comply with all applicable company policies as part of this application process.
             </span>
           </label>

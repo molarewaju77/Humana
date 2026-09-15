@@ -181,12 +181,12 @@ function DetailRow({
   const textToCopy = copyValue || value
 
   return (
-    <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 py-2.5 border-b border-brand-border/60 last:border-0 items-start sm:items-center justify-between">
-      <span className="text-xs font-semibold text-brand-deeptext uppercase tracking-wider sm:w-44 shrink-0">
+    <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 py-2.5 border-b border-brand-border/60 last:border-0 items-start sm:items-center justify-between w-full min-w-0">
+      <span className="text-xs font-semibold text-brand-secondarytext uppercase tracking-wider sm:w-44 shrink-0">
         {label}
       </span>
-      <div className="flex items-center gap-1.5 text-xs text-brand-deeptext font-normal leading-relaxed min-w-0 flex-1 justify-start sm:justify-end">
-        <span className="break-words font-normal">{value}</span>
+      <div className="flex items-start sm:items-center gap-1.5 text-xs text-brand-deeptext font-normal leading-relaxed min-w-0 flex-1 justify-start sm:justify-end w-full sm:w-auto">
+        <span className="break-all sm:break-words font-normal min-w-0">{value}</span>
         {textToCopy && (
           <CopyButton text={textToCopy} label={label} />
         )}
@@ -197,14 +197,14 @@ function DetailRow({
 
 function Section({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-xl border border-brand-border overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-brand-border/60 bg-brand-softbg/60">
-        <div className="size-7 rounded-md bg-primary/10 flex items-center justify-center text-primary">
+    <div className="bg-white rounded-xl border border-brand-border overflow-hidden w-full max-w-full min-w-0">
+      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-brand-border/60 bg-brand-softbg/60 min-w-0">
+        <div className="size-7 rounded-md bg-primary/10 flex items-center justify-center text-primary shrink-0">
           <Icon size={14} />
         </div>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-brand-deeptext">{title}</h2>
+        <h2 className="text-xs font-bold uppercase tracking-wider text-brand-deeptext truncate">{title}</h2>
       </div>
-      <div className="px-4 py-3">{children}</div>
+      <div className="px-4 py-3 w-full max-w-full min-w-0">{children}</div>
     </div>
   )
 }
@@ -268,9 +268,9 @@ export default function AdminApplicationDetailPage() {
   const fullAddress = [pi.address, pi.city, pi.state, pi.zipCode, pi.country].filter(Boolean).join(', ')
 
   return (
-    <div className="space-y-5 animate-fade-in pb-12">
+    <div className="space-y-5 animate-fade-in pb-12 w-full max-w-full min-w-0">
       {/* Back + header */}
-      <div>
+      <div className="w-full min-w-0">
         <Link
           to="/admin/applications"
           className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-medium text-brand-deeptext bg-white px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg hover:bg-brand-softbg transition-all cursor-pointer shadow-2xs mb-3"
@@ -279,7 +279,7 @@ export default function AdminApplicationDetailPage() {
           <span>Back to Applications</span>
         </Link>
 
-        <div className="bg-white p-4 sm:p-5 rounded-xl border border-brand-border space-y-3.5">
+        <div className="bg-white p-4 sm:p-5 rounded-xl border border-brand-border space-y-3.5 w-full min-w-0">
           {/* Top Row: Avatar + Candidate Name + Top Right Status Badge */}
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -313,7 +313,7 @@ export default function AdminApplicationDetailPage() {
           </div>
 
           {/* Mobile Metadata Box (< sm viewports) */}
-          <div className="sm:hidden bg-brand-softbg/60 rounded-lg p-2.5 space-y-1.5 text-[11px] border border-brand-border">
+          <div className="sm:hidden bg-brand-softbg/60 rounded-lg p-2.5 space-y-1.5 text-[11px] border border-brand-border w-full min-w-0">
             <div className="flex items-center justify-between gap-2">
               <span className="text-brand-secondarytext font-medium">Ref ID</span>
               <div className="flex items-center gap-1 font-mono font-medium text-brand-deeptext">
@@ -360,9 +360,9 @@ export default function AdminApplicationDetailPage() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-[1fr_300px] gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5 w-full min-w-0">
         {/* Main detail content */}
-        <div className="space-y-4">
+        <div className="space-y-4 w-full min-w-0">
           {/* Step 1: Personal Information */}
           <Section title="1. Personal Information" icon={User}>
             <DetailRow label="Full Name" value={fullName} />
@@ -470,7 +470,7 @@ export default function AdminApplicationDetailPage() {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-4">
+        <div className="space-y-4 w-full min-w-0">
           {/* Status Timeline */}
           <div className="bg-white rounded-xl border border-brand-border p-4">
             <div className="flex items-center gap-2 mb-3">

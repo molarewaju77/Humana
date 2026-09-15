@@ -141,11 +141,9 @@ export default function FileUpload({
               <p className="text-sm font-semibold text-brand-deeptext truncate">{displayFileName}</p>
               <CheckCircle2 size={14} className="text-primary shrink-0" />
             </div>
-            <div className="flex items-center gap-2 mt-0.5 text-xs text-brand-secondarytext">
-              {fileSize && <span>{formatFileSize(fileSize)}</span>}
-              {fileSize && <span>•</span>}
-              <span className="text-primary font-medium">Ready to submit</span>
-            </div>
+            {fileSize ? (
+              <p className="mt-0.5 text-xs text-brand-secondarytext">{formatFileSize(fileSize)}</p>
+            ) : null}
           </div>
 
           {/* Remove button */}

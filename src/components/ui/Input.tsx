@@ -141,7 +141,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     }
 
     return (
-      <div className="field-wrapper">
+      <div className="field-wrapper w-full max-w-full min-w-0">
         {label && (
           <label htmlFor={inputId} className="field-label">
             {label}
@@ -155,7 +155,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           aria-invalid={!!error}
           aria-describedby={error ? `${inputId}-error` : helper ? `${inputId}-helper` : undefined}
           className={cn(
-            'field-input',
+            'field-input w-full max-w-full min-w-0',
             error && 'field-input-error',
             className,
           )}

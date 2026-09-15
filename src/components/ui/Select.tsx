@@ -21,20 +21,20 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     const selectId = id || label?.toLowerCase().replace(/\s+/g, '-')
 
     return (
-      <div className="field-wrapper">
+      <div className="field-wrapper w-full max-w-full min-w-0">
         {label && (
           <label htmlFor={selectId} className="field-label">
             {label}
             {required && <span className="text-brand-error ml-0.5" aria-hidden="true">*</span>}
           </label>
         )}
-        <div className="relative">
+        <div className="relative w-full max-w-full min-w-0">
           <select
             ref={ref}
             id={selectId}
             aria-invalid={!!error}
             className={cn(
-              'field-input appearance-none pr-9',
+              'field-input appearance-none pr-9 w-full max-w-full min-w-0',
               error && 'field-input-error',
               className,
             )}

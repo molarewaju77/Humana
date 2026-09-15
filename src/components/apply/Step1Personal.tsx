@@ -90,7 +90,7 @@ export default function Step1Personal({ defaultValues, onNext }: Props) {
         description="Please provide your personal details. All information is handled with strict confidentiality."
       >
         {/* Name */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full min-w-0">
           <Input
             label="First Name"
             required
@@ -108,7 +108,7 @@ export default function Step1Personal({ defaultValues, onNext }: Props) {
         </div>
 
         {/* DOB + Gender */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full min-w-0">
           <Input
             label="Date of Birth"
             required
