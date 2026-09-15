@@ -4,9 +4,9 @@ import SiteFooter from './SiteFooter'
 
 export default function SiteLayout() {
   return (
-    <div className="flex min-h-dvh flex-col bg-white">
+    <div className="flex min-h-dvh flex-col bg-white w-full overflow-x-hidden">
       <SiteHeader />
-      <main className="flex-1">
+      <main className="flex-1 w-full overflow-x-hidden">
         <Outlet />
       </main>
       <SiteFooter />

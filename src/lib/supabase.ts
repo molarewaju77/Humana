@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://clabdrxjocctpfbohad.supabase.co'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_mvTcpUBigYx7x6VIzAgu6g_rVVxcwzl'
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://clabdrxkjocctpfbohad.supabase.co'
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_84USGDUwe0qRrj4M1F-zag_NOJAHVFL'
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
@@ -24,8 +24,8 @@ export async function uploadDocumentFile(file: File, folder: string = 'candidate
       })
 
     if (error) {
-      console.warn('Supabase storage upload error:', error.message)
-      return file.name
+      console.error('Supabase storage upload error:', error)
+      throw new Error(error.message || 'Upload failed')
     }
 
     // Get public URL
@@ -34,8 +34,8 @@ export async function uploadDocumentFile(file: File, folder: string = 'candidate
       .getPublicUrl(data.path)
 
     return urlData?.publicUrl || data.path
-  } catch (err) {
+  } catch (err: any) {
     console.error('File upload exception:', err)
-    return file.name
+    throw err
   }
 }

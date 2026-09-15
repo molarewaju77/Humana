@@ -39,7 +39,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-softbg flex items-center justify-center px-5 py-12">
+    <div className="min-h-screen bg-brand-softbg flex items-center justify-center px-5 py-12 w-full overflow-x-hidden">
       <div className="w-full max-w-sm animate-fade-in">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">

@@ -28,12 +28,12 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-brand-softbg">
+    <div className="flex min-h-screen bg-brand-softbg w-full overflow-x-hidden">
       {/* Desktop Sidebar */}
       <AdminSidebar />
 
       {/* Main Content Area */}
-      <div className="flex-1 min-w-0 flex flex-col min-h-screen">
+      <div className="flex-1 min-w-0 flex flex-col min-h-screen w-full overflow-x-hidden">
         {/* Mobile Header Bar (< md) */}
         <header className="sticky top-0 z-30 bg-white border-b border-brand-border px-4 py-3 flex items-center justify-between shadow-xs md:hidden">
           <Link to="/admin/dashboard" className="flex items-center gap-2" aria-label="Humana Admin Portal">
@@ -126,7 +126,7 @@ export default function AdminLayout() {
         )}
 
         {/* Main Content Area */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full overflow-x-hidden min-w-0">
           <AdminBreadcrumbs />
           <Outlet />
         </main>

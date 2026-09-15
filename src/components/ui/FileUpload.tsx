@@ -54,10 +54,11 @@ export default function FileUpload({
 
     try {
       const uploadedUrl = await uploadDocumentFile(file)
-      onChange?.(uploadedUrl || file.name)
+      if (uploadedUrl) {
+        onChange?.(uploadedUrl)
+      }
     } catch (err: any) {
-      setLocalError(err.message || 'Failed to upload file to storage.')
-      onChange?.(file.name)
+      setLocalError(err.message || 'Failed to upload file to storage. Check bucket configuration.')
     } finally {
       setUploading(false)
     }
