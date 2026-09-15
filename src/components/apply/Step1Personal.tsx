@@ -180,7 +180,9 @@ export default function Step1Personal({ defaultValues, onNext }: Props) {
             label="Phone Number"
             required
             type="tel"
-            placeholder="+1 (555) 000-0000"
+            formatType="phone"
+            placeholder="(555) 000-0000"
+            helper="10-digit standard phone number"
             error={errors.phone?.message}
             {...register('phone')}
           />
@@ -214,6 +216,8 @@ export default function Step1Personal({ defaultValues, onNext }: Props) {
           <Input
             label="Zip / Postal Code"
             required
+            formatType="zip"
+            maxLength={10}
             placeholder="10001"
             error={errors.zipCode?.message}
             {...register('zipCode')}

@@ -74,7 +74,7 @@ export default function AdminApplicationsPage() {
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
             style={{ paddingLeft: '2.625rem', paddingRight: '2.25rem' }}
-            className="w-full h-10 text-xs text-brand-deeptext bg-white rounded-lg border border-brand-border focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-brand-secondarytext/60"
+            className="w-full h-10 text-base sm:text-xs text-brand-deeptext bg-white rounded-lg border border-brand-border focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-brand-secondarytext/60"
           />
           {search && (
             <button

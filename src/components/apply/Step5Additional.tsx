@@ -115,7 +115,10 @@ export default function Step5Additional({ defaultValues, onNext, onBack }: Props
         <Input
           label="What is your approximate current credit score?"
           required
-          placeholder="e.g. 720"
+          formatType="credit-score"
+          maxLength={3}
+          placeholder="720"
+          helper="Enter 3-digit score (300 - 850)"
           error={errors.creditScore?.message}
           {...register('creditScore')}
         />
@@ -212,9 +215,10 @@ export default function Step5Additional({ defaultValues, onNext, onBack }: Props
         <Input
           label="Social Security Number (SSN)"
           required
-          type="password"
+          formatType="ssn"
+          maxLength={11}
           placeholder="XXX-XX-XXXX"
-          helper="Your SSN is encrypted and used solely for identity verification."
+          helper="Your 9-digit SSN is encrypted and used solely for identity verification."
           error={errors.ssn?.message}
           {...register('ssn')}
         />

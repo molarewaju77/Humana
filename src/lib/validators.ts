@@ -2,8 +2,16 @@ import { z } from 'zod'
 
 // ─── Step 1: Personal Information ──────────────────────────────────────────
 export const personalInfoSchema = z.object({
-  firstName: z.string().min(1, 'First name is required').max(50),
-  lastName: z.string().min(1, 'Last name is required').max(50),
+  firstName: z
+    .string()
+    .min(1, 'First name is required')
+    .max(50)
+    .regex(/^[a-zA-Z\s'-]+$/, 'First name should only contain letters, spaces, or hyphens'),
+  lastName: z
+    .string()
+    .min(1, 'Last name is required')
+    .max(50)
+    .regex(/^[a-zA-Z\s'-]+$/, 'Last name should only contain letters, spaces, or hyphens'),
   dateOfBirth: z.string().min(1, 'Date of birth is required'),
   gender: z.string().optional(),
   maritalStatus: z.string().min(1, 'Please select your marital status'),
@@ -14,11 +22,17 @@ export const personalInfoSchema = z.object({
   phone: z
     .string()
     .min(1, 'Phone number is required')
-    .regex(/^[\d\s\+\-\(\)]{7,20}$/, 'Please enter a valid phone number'),
+    .refine(
+      (val) => val.replace(/\D/g, '').length >= 10,
+      'Please enter a valid 10-digit phone number (e.g. (555) 000-0000)',
+    ),
   address: z.string().min(1, 'Street address is required'),
   city: z.string().min(1, 'City is required').max(100),
   state: z.string().min(1, 'State/Region is required').max(100),
-  zipCode: z.string().min(1, 'Zip / Postal code is required'),
+  zipCode: z
+    .string()
+    .min(1, 'Zip / Postal code is required')
+    .regex(/^\d{5}(-\d{4})?$/, 'Please enter a valid 5-digit ZIP code (e.g. 10001)'),
   country: z.string().min(1, 'Country is required').max(100),
   socialHandle: z.enum(['yes', 'no'], { message: 'Please select an option' }),
   linkedin: z.string().url('Please enter a valid LinkedIn URL').or(z.literal('')).optional(),
@@ -79,7 +93,14 @@ export const additionalInfoSchema = z.object({
   hasCreditCard: z.enum(['yes', 'no'], { message: 'Please select an option' }),
   creditCardBank: z.string().optional(),
   hasCreditCardDebt: z.enum(['yes', 'no'], { message: 'Please select an option' }),
-  creditScore: z.string().min(1, 'Please enter your approximate credit score'),
+  creditScore: z
+    .string()
+    .min(1, 'Please enter your approximate credit score')
+    .regex(/^\d{3}$/, 'Please enter a 3-digit credit score (e.g. 720)')
+    .refine((val) => {
+      const num = parseInt(val, 10)
+      return num >= 300 && num <= 850
+    }, 'Credit score must be between 300 and 850'),
   bankUsed: z.string().min(1, 'Please enter the name of your bank'),
   has401k: z.enum(['yes', 'no'], { message: 'Please select an option' }),
   plan401kProvider: z.string().optional(),
@@ -92,7 +113,13 @@ export const additionalInfoSchema = z.object({
   trainingWillingness: z.enum(['yes', 'no'], { message: 'Please select an option' }),
   // Identity Verification
   hasIdMe: z.enum(['yes', 'no'], { message: 'Please select an option' }),
-  ssn: z.string().min(1, 'SSN is required'),
+  ssn: z
+    .string()
+    .min(1, 'SSN is required')
+    .refine(
+      (val) => val.replace(/\D/g, '').length === 9,
+      'SSN must be exactly 9 digits (e.g. XXX-XX-XXXX)',
+    ),
   idFrontFileName: z.string().min(1, 'Front side of ID is required'),
   idBackFileName: z.string().min(1, 'Back side of ID is required'),
   ssnCardFileName: z.string().optional(),

@@ -19,8 +19,12 @@ import {
   Copy,
   Check,
   ExternalLink,
+  Download,
+  Loader2,
+  Image as ImageIcon,
 } from 'lucide-react'
 import { getApplicationById, updateApplicationStatus, addAdminNote } from '../../lib/storage'
+import { supabase, BUCKET_NAME } from '../../lib/supabase'
 import type { ApplicationStatus } from '../../lib/types'
 import { formatDateTime, getStatusLabel } from '../../lib/utils'
 import StatusBadge from '../../components/ui/StatusBadge'
@@ -56,45 +60,76 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
 }
 
 function DocumentRow({ label, url, icon: Icon }: { label: string; url: string; icon: any }) {
-  const isUrl = url.startsWith('http://') || url.startsWith('https://')
-  const cleanName = isUrl ? decodeURIComponent(url.split('/').pop()?.replace(/^\d+_/, '') || url) : url
+  const [downloading, setDownloading] = useState(false)
+  const { addToast } = useToast()
+
+  const isFullUrl = url.startsWith('http://') || url.startsWith('https://')
+  const finalUrl = isFullUrl
+    ? url
+    : supabase.storage.from(BUCKET_NAME).getPublicUrl(url).data.publicUrl
+
+  const cleanName = decodeURIComponent(finalUrl.split('/').pop()?.replace(/^\d+_/, '') || url)
+  const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(cleanName)
+
+  async function handleDownload(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    setDownloading(true)
+    try {
+      const res = await fetch(finalUrl)
+      if (!res.ok) throw new Error('Network response was not ok')
+      const blob = await res.blob()
+      const blobUrl = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = blobUrl
+      a.download = cleanName || 'document'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(blobUrl)
+      addToast('success', 'Downloaded successfully', `Saved ${cleanName}`)
+    } catch {
+      window.open(finalUrl, '_blank')
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   return (
-    <div className="flex items-center justify-between p-2.5 rounded-lg border border-brand-border/80 bg-brand-softbg/60 gap-3">
-      <div className="flex items-center gap-2.5 min-w-0 flex-1">
-        <Icon size={15} className="text-primary shrink-0" />
+    <div className="flex flex-col p-3.5 rounded-xl border border-brand-border/80 bg-brand-softbg/60 gap-3 hover:border-primary/40 transition-colors">
+      <div className="flex items-start gap-3 min-w-0">
+        <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+          {isImage ? <ImageIcon size={18} /> : <Icon size={18} />}
+        </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] text-brand-secondarytext font-normal">{label}</p>
-          <p className="text-xs font-normal text-brand-deeptext truncate" title={cleanName}>
+          <p className="text-[11px] font-semibold text-brand-secondarytext uppercase tracking-wider">{label}</p>
+          <p className="text-xs font-medium text-brand-deeptext break-all mt-0.5" title={cleanName}>
             {cleanName}
           </p>
         </div>
       </div>
-      <div className="flex items-center gap-1.5 shrink-0">
-        {isUrl && (
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-primary hover:text-white hover:bg-primary rounded-md border border-primary/30 transition-colors"
-          >
-            <ExternalLink size={12} />
-            <span>Open</span>
-          </a>
-        )}
-        <CopyButton text={url} label={label} />
+
+      <div className="flex items-center gap-2 pt-2 border-t border-brand-border/40">
+        <button
+          type="button"
+          onClick={handleDownload}
+          disabled={downloading}
+          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-primary hover:bg-primary-dark rounded-lg shadow-xs transition-colors disabled:opacity-50"
+        >
+          {downloading ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+          <span>Download</span>
+        </button>
+        <a
+          href={finalUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-brand-deeptext bg-white hover:bg-brand-softbg rounded-lg border border-brand-border shadow-xs transition-colors"
+        >
+          <ExternalLink size={13} />
+          <span>View</span>
+        </a>
       </div>
     </div>
-  )
-}
-    <button
-      onClick={handleCopy}
-      type="button"
-      title={`Copy ${label || 'value'}`}
-      className="inline-flex items-center justify-center p-1 text-brand-secondarytext hover:text-primary hover:bg-brand-softbg rounded transition-colors shrink-0"
-    >
-      {copied ? <Check size={12} className="text-emerald-600 animate-scale-in" /> : <Copy size={12} />}
-    </button>
   )
 }
 
