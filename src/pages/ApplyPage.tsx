@@ -15,7 +15,7 @@ import {
   type AdditionalInfoData,
 } from '../lib/validators'
 import type { Application } from '../lib/types'
-import { saveApplication } from '../lib/storage'
+import { saveApplication, saveApplicationAsync } from '../lib/storage'
 import { uploadAllPendingFiles, clearAllPendingFiles } from '../lib/fileUploadStore'
 import { generateReferenceNumber, formatDateTime } from '../lib/utils'
 import { useToast } from '../components/ui/Toast'
@@ -127,7 +127,7 @@ export default function ApplyPage() {
         adminNotes: [],
       }
 
-      saveApplication(application)
+      await saveApplicationAsync(application)
       clearAllPendingFiles()
       setReferenceNumber(refNum)
 

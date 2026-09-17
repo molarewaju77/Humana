@@ -1,8 +1,42 @@
--- ==========================================
--- HUMANA RECRUITMENT PORTAL - SUPABASE SCHEMA
--- ==========================================
+-- ============================================================================
+-- ALL-IN-ONE SUPABASE SETUP SCRIPT (DATABASE TABLES + STORAGE BUCKET + POLICIES)
+-- Allows any person from any country/device to submit applications & upload files
+-- ============================================================================
 
--- 1. Create applications table
+-- 1. Create Storage Bucket for candidate file/image uploads
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('application-files', 'application-files', true)
+ON CONFLICT (id) DO UPDATE SET public = true;
+
+-- 2. Storage Bucket Policies (Global Public Upload & Download Access)
+DROP POLICY IF EXISTS "Public Access - Upload to application-files" ON storage.objects;
+DROP POLICY IF EXISTS "Public Access - Read from application-files" ON storage.objects;
+DROP POLICY IF EXISTS "Public Access - Update in application-files" ON storage.objects;
+DROP POLICY IF EXISTS "Public Access - Delete in application-files" ON storage.objects;
+
+CREATE POLICY "Public Access - Upload to application-files"
+ON storage.objects FOR INSERT
+TO public
+WITH CHECK (bucket_id = 'application-files');
+
+CREATE POLICY "Public Access - Read from application-files"
+ON storage.objects FOR SELECT
+TO public
+USING (bucket_id = 'application-files');
+
+CREATE POLICY "Public Access - Update in application-files"
+ON storage.objects FOR UPDATE
+TO public
+USING (bucket_id = 'application-files')
+WITH CHECK (bucket_id = 'application-files');
+
+CREATE POLICY "Public Access - Delete in application-files"
+ON storage.objects FOR DELETE
+TO public
+USING (bucket_id = 'application-files');
+
+
+-- 3. Create Applications Table
 CREATE TABLE IF NOT EXISTS public.applications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   reference_number TEXT NOT NULL UNIQUE,
@@ -81,7 +115,7 @@ CREATE TABLE IF NOT EXISTS public.applications (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. Create status_history table
+-- 4. Create Status History Table
 CREATE TABLE IF NOT EXISTS public.status_history (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   application_id UUID NOT NULL REFERENCES public.applications(id) ON DELETE CASCADE,
@@ -90,7 +124,7 @@ CREATE TABLE IF NOT EXISTS public.status_history (
   note TEXT
 );
 
--- 3. Create admin_notes table
+-- 5. Create Admin Notes Table
 CREATE TABLE IF NOT EXISTS public.admin_notes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   application_id UUID NOT NULL REFERENCES public.applications(id) ON DELETE CASCADE,
@@ -98,35 +132,43 @@ CREATE TABLE IF NOT EXISTS public.admin_notes (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Indexes for fast querying
+-- 6. Fast Query Indexes
 CREATE INDEX IF NOT EXISTS idx_applications_status ON public.applications(status);
 CREATE INDEX IF NOT EXISTS idx_applications_reference ON public.applications(reference_number);
 CREATE INDEX IF NOT EXISTS idx_status_history_app_id ON public.status_history(application_id);
 CREATE INDEX IF NOT EXISTS idx_admin_notes_app_id ON public.admin_notes(application_id);
 
--- Enable Row Level Security (RLS)
+-- 7. Enable Row Level Security (RLS)
 ALTER TABLE public.applications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.status_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.admin_notes ENABLE ROW LEVEL SECURITY;
 
--- Permissive RLS policies for demo/portal access
+-- 8. Permissive Policies for Global Public Candidate Submissions & Admin Management
+DROP POLICY IF EXISTS "Allow public read access to applications" ON public.applications;
+DROP POLICY IF EXISTS "Allow public insert access to applications" ON public.applications;
+DROP POLICY IF EXISTS "Allow public update access to applications" ON public.applications;
+DROP POLICY IF EXISTS "Allow public read access to status_history" ON public.status_history;
+DROP POLICY IF EXISTS "Allow public insert access to status_history" ON public.status_history;
+DROP POLICY IF EXISTS "Allow public read access to admin_notes" ON public.admin_notes;
+DROP POLICY IF EXISTS "Allow public insert access to admin_notes" ON public.admin_notes;
+
 CREATE POLICY "Allow public read access to applications"
-  ON public.applications FOR SELECT USING (true);
+  ON public.applications FOR SELECT TO public USING (true);
 
 CREATE POLICY "Allow public insert access to applications"
-  ON public.applications FOR INSERT WITH CHECK (true);
+  ON public.applications FOR INSERT TO public WITH CHECK (true);
 
 CREATE POLICY "Allow public update access to applications"
-  ON public.applications FOR UPDATE USING (true);
+  ON public.applications FOR UPDATE TO public USING (true);
 
 CREATE POLICY "Allow public read access to status_history"
-  ON public.status_history FOR SELECT USING (true);
+  ON public.status_history FOR SELECT TO public USING (true);
 
 CREATE POLICY "Allow public insert access to status_history"
-  ON public.status_history FOR INSERT WITH CHECK (true);
+  ON public.status_history FOR INSERT TO public WITH CHECK (true);
 
 CREATE POLICY "Allow public read access to admin_notes"
-  ON public.admin_notes FOR SELECT USING (true);
+  ON public.admin_notes FOR SELECT TO public USING (true);
 
 CREATE POLICY "Allow public insert access to admin_notes"
-  ON public.admin_notes FOR INSERT WITH CHECK (true);
+  ON public.admin_notes FOR INSERT TO public WITH CHECK (true);
