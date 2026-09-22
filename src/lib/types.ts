@@ -106,6 +106,17 @@ export interface Application {
   adminNotes: AdminNote[]
 }
 
+// Application List Item (Lightweight for tables and dashboards)
+export interface ApplicationListItem {
+  id: string
+  referenceNumber: string
+  submittedAt: string
+  status: ApplicationStatus
+  firstName: string
+  lastName: string
+  email: string
+}
+
 export interface StatusHistoryEntry {
   status: ApplicationStatus
   changedAt: string

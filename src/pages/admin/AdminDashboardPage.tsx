@@ -8,14 +8,12 @@ import {
   CheckCircle,
   XCircle,
   ArrowRight,
-  RotateCw,
 } from "lucide-react";
 import {
-  fetchApplications,
-  getCachedApplications,
+  fetchApplicationsList,
   calculateStats,
 } from "../../lib/storage";
-import type { Application } from "../../lib/types";
+import type { ApplicationListItem } from "../../lib/types";
 import { formatDate } from "../../lib/utils";
 import StatusBadge from "../../components/ui/StatusBadge";
 import EmptyState from "../../components/ui/EmptyState";
@@ -23,37 +21,28 @@ import CircularLoader from "../../components/ui/CircularLoader";
 import { useToast } from "../../components/ui/Toast";
 
 export default function AdminDashboardPage() {
-  const [apps, setApps] = useState<Application[]>(() => getCachedApplications());
-  const [loading, setLoading] = useState<boolean>(() => getCachedApplications().length === 0);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [apps, setApps] = useState<ApplicationListItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const { addToast } = useToast();
 
-  const loadData = useCallback(async (forceRefresh = false) => {
-    if (forceRefresh) {
-      setRefreshing(true);
-    } else if (apps.length === 0) {
-      setLoading(true);
-    }
-
+  const loadData = useCallback(async () => {
     try {
-      const data = await fetchApplications(forceRefresh);
+      const data = await fetchApplicationsList();
       setApps(data);
     } catch (error: any) {
       console.error("Dashboard fetch applications failed:", error);
       addToast(
         "error",
         "Failed to load applications",
-        error?.message || "Check your Supabase connection and database policies."
+        error?.message || "Check your database connection."
       );
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
-  }, [addToast, apps.length]);
+  }, [addToast]);
 
   useEffect(() => {
-    // If we have cached apps, revalidate in background silently; otherwise fetch
-    loadData(false);
+    loadData();
   }, [loadData]);
 
   const stats = useMemo(() => calculateStats(apps), [apps]);
@@ -100,24 +89,9 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Page title & Actions */}
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-brand-deeptext">Dashboard</h1>
-          <p className="text-sm text-brand-secondarytext mt-1">
-            Overview of all recruitment activity
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => loadData(true)}
-          disabled={loading || refreshing}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-border bg-white text-xs font-medium text-brand-deeptext hover:bg-brand-softbg transition-colors disabled:opacity-50"
-          title="Refresh Data from Supabase"
-        >
-          <RotateCw size={13} className={refreshing ? "animate-spin text-primary" : ""} />
-          <span className="hidden sm:inline">Refresh</span>
-        </button>
+      {/* Page title */}
+      <div>
+        <h1 className="text-2xl font-bold text-brand-deeptext">Dashboard</h1>
       </div>
 
       {/* Stats grid */}
@@ -179,13 +153,12 @@ export default function AdminDashboardPage() {
                 <div className="flex items-center gap-4 min-w-0">
                   <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                     <span className="text-sm font-bold text-primary">
-                      {app.personalInfo.firstName?.[0]}
-                      {app.personalInfo.lastName?.[0]}
+                      {(app.firstName[0] || "")}{(app.lastName[0] || "")}
                     </span>
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-brand-deeptext truncate">
-                      {app.personalInfo.firstName} {app.personalInfo.lastName}
+                      {app.firstName} {app.lastName}
                     </p>
                     <p className="text-xs text-brand-secondarytext">
                       {app.referenceNumber}

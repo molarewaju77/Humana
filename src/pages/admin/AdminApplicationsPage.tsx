@@ -1,8 +1,8 @@
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Filter, Eye, FileText, ChevronLeft, ChevronRight, ChevronDown, X, RotateCw } from 'lucide-react'
-import { fetchApplications, getCachedApplications } from '../../lib/storage'
-import type { Application, ApplicationStatus } from '../../lib/types'
+import { Search, Filter, Eye, FileText, ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react'
+import { fetchApplicationsList } from '../../lib/storage'
+import type { ApplicationListItem, ApplicationStatus } from '../../lib/types'
 import { formatDate, getStatusLabel } from '../../lib/utils'
 import StatusBadge from '../../components/ui/StatusBadge'
 import EmptyState from '../../components/ui/EmptyState'
@@ -16,36 +16,39 @@ const ALL_STATUSES: ApplicationStatus[] = [
 const PAGE_SIZE = 10
 
 export default function AdminApplicationsPage() {
-  const [allApps, setAllApps] = useState<Application[]>(() => getCachedApplications())
-  const [loading, setLoading] = useState(() => getCachedApplications().length === 0)
-  const [refreshing, setRefreshing] = useState(false)
+  const [allApps, setAllApps] = useState<ApplicationListItem[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | 'all'>('all')
   const [page, setPage] = useState(1)
   const { addToast } = useToast()
 
-  const loadData = useCallback(async (isManualRefresh = false) => {
-    if (isManualRefresh) {
-      setRefreshing(true)
-    } else if (allApps.length === 0) {
-      setLoading(true)
-    }
-
-    try {
-      const apps = await fetchApplications(isManualRefresh)
-      setAllApps(apps)
-    } catch (err: any) {
-      console.error('Failed to load applications from Supabase:', err)
-      addToast('error', 'Failed to load applications', err?.message || 'Check your database connection.')
-    } finally {
-      setLoading(false)
-      setRefreshing(false)
-    }
-  }, [addToast, allApps.length])
-
   useEffect(() => {
-    loadData(false)
-  }, [loadData])
+    let mounted = true
+    setLoading(true)
+
+    fetchApplicationsList()
+      .then((apps) => {
+        if (mounted) {
+          setAllApps(apps)
+        }
+      })
+      .catch((err: any) => {
+        if (mounted) {
+          console.error('Failed to load applications list:', err)
+          addToast('error', 'Failed to load applications', err?.message || 'Check your database connection.')
+        }
+      })
+      .finally(() => {
+        if (mounted) {
+          setLoading(false)
+        }
+      })
+
+    return () => {
+      mounted = false
+    }
+  }, [addToast])
 
   const filtered = useMemo(() => {
     let apps = allApps
@@ -56,9 +59,9 @@ export default function AdminApplicationsPage() {
       const q = search.toLowerCase().trim()
       apps = apps.filter(
         (a) =>
-          `${a.personalInfo.firstName} ${a.personalInfo.lastName}`.toLowerCase().includes(q) ||
+          `${a.firstName} ${a.lastName}`.toLowerCase().includes(q) ||
           a.referenceNumber.toLowerCase().includes(q) ||
-          a.personalInfo.email.toLowerCase().includes(q),
+          a.email.toLowerCase().includes(q),
       )
     }
     return apps
@@ -78,25 +81,13 @@ export default function AdminApplicationsPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-brand-deeptext">Applications</h1>
-          <p className="text-xs text-brand-secondarytext mt-1">
-            {loading && allApps.length === 0
-              ? 'Fetching records…'
-              : `${filtered.length} ${filtered.length === 1 ? 'application' : 'applications'} found`}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => loadData(true)}
-          disabled={loading || refreshing}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-border bg-white text-xs font-medium text-brand-deeptext hover:bg-brand-softbg transition-colors disabled:opacity-50"
-          title="Refresh Applications"
-        >
-          <RotateCw size={13} className={refreshing ? 'animate-spin text-primary' : ''} />
-          <span className="hidden sm:inline">Refresh</span>
-        </button>
+      <div>
+        <h1 className="text-2xl font-bold text-brand-deeptext">Applications</h1>
+        <p className="text-xs text-brand-secondarytext mt-1">
+          {loading
+            ? 'Fetching records…'
+            : `${filtered.length} ${filtered.length === 1 ? 'application' : 'applications'} found`}
+        </p>
       </div>
 
       {/* Refined Search & Filter Controls */}
@@ -144,7 +135,7 @@ export default function AdminApplicationsPage() {
 
       {/* Table / Cards Container */}
       <div className="bg-white rounded-2xl border border-brand-border overflow-hidden">
-        {loading && allApps.length === 0 ? (
+        {loading ? (
           <CircularLoader
             size="lg"
             label="Loading Applications"
@@ -185,16 +176,16 @@ export default function AdminApplicationsPage() {
                         <div className="flex items-center gap-2.5">
                           <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                             <span className="text-xs font-bold text-primary">
-                              {app.personalInfo.firstName?.[0]}{app.personalInfo.lastName?.[0]}
+                              {(app.firstName[0] || '')}{(app.lastName[0] || '')}
                             </span>
                           </div>
                           <span className="text-sm font-medium text-brand-deeptext">
-                            {app.personalInfo.firstName} {app.personalInfo.lastName}
+                            {app.firstName} {app.lastName}
                           </span>
                         </div>
                       </td>
                       <td className="px-5 py-4 text-sm text-brand-secondarytext">
-                        {app.personalInfo.email}
+                        {app.email}
                       </td>
                       <td className="px-5 py-4 text-sm text-brand-secondarytext whitespace-nowrap">
                         {formatDate(app.submittedAt)}
@@ -229,14 +220,14 @@ export default function AdminApplicationsPage() {
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                         <span className="text-xs font-bold text-primary">
-                          {app.personalInfo.firstName?.[0]}{app.personalInfo.lastName?.[0]}
+                          {(app.firstName[0] || '')}{(app.lastName[0] || '')}
                         </span>
                       </div>
                       <div className="min-w-0">
                         <h3 className="text-sm font-semibold text-brand-deeptext truncate">
-                          {app.personalInfo.firstName} {app.personalInfo.lastName}
+                          {app.firstName} {app.lastName}
                         </h3>
-                        <p className="text-xs text-brand-secondarytext truncate">{app.personalInfo.email}</p>
+                        <p className="text-xs text-brand-secondarytext truncate">{app.email}</p>
                       </div>
                     </div>
                     <StatusBadge status={app.status} size="sm" />

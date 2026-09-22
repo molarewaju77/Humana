@@ -22,7 +22,7 @@ import {
   CheckCircle,
   FileCheck,
 } from 'lucide-react'
-import { fetchApplicationById, updateApplicationStatus, addAdminNote, getCachedApplications } from '../../lib/storage'
+import { fetchApplicationDetail, updateApplicationStatus, addAdminNote } from '../../lib/storage'
 import { supabase, BUCKET_NAME } from '../../lib/supabase'
 import type { Application, ApplicationStatus } from '../../lib/types'
 import { formatDateTime, getStatusLabel } from '../../lib/utils'
@@ -224,52 +224,44 @@ export default function AdminApplicationDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { addToast } = useToast()
 
-  const [app, setApp] = useState<Application | null>(() => {
-    if (!id) return null
-    return getCachedApplications().find((a) => a.id === id || a.referenceNumber === id) || null
-  })
-  const [loading, setLoading] = useState<boolean>(() => {
-    if (!id) return false
-    return !getCachedApplications().some((a) => a.id === id || a.referenceNumber === id)
-  })
+  const [app, setApp] = useState<Application | null>(null)
+  const [loading, setLoading] = useState(true)
   const [newNote, setNewNote] = useState('')
   const [savingNote, setSavingNote] = useState(false)
   const [updatingStatus, setUpdatingStatus] = useState(false)
-  const [selectedStatus, setSelectedStatus] = useState<ApplicationStatus | ''>(() => {
-    const cached = id ? getCachedApplications().find((a) => a.id === id || a.referenceNumber === id) : null
-    return cached?.status || ''
-  })
+  const [selectedStatus, setSelectedStatus] = useState<ApplicationStatus | ''>('')
 
   useEffect(() => {
     if (!id) return
 
-    // Check if we have cached data first for instant display
-    const cached = getCachedApplications().find((a) => a.id === id || a.referenceNumber === id)
-    if (cached) {
-      setApp(cached)
-      setSelectedStatus(cached.status)
-      setLoading(false)
-    } else {
-      setLoading(true)
-    }
+    let mounted = true
+    setLoading(true)
 
-    // Always fetch live application from Supabase
-    fetchApplicationById(id)
+    // Independently fetch this single applicant's full details
+    fetchApplicationDetail(id)
       .then((data) => {
-        if (data) {
+        if (mounted) {
           setApp(data)
-          setSelectedStatus(data.status)
+          if (data) {
+            setSelectedStatus(data.status)
+          }
         }
       })
       .catch((err: any) => {
-        console.error('Failed to load application from Supabase:', err)
-        if (!cached) {
+        if (mounted) {
+          console.error('Failed to load application details from Supabase:', err)
           addToast('error', 'Failed to load application', err?.message || 'Check database connection')
         }
       })
       .finally(() => {
-        setLoading(false)
+        if (mounted) {
+          setLoading(false)
+        }
       })
+
+    return () => {
+      mounted = false
+    }
   }, [id, addToast])
 
   async function handleStatusUpdate() {
@@ -303,13 +295,13 @@ export default function AdminApplicationDetailPage() {
     }
   }
 
-  if (loading && !app) {
+  if (loading) {
     return (
       <div className="bg-white rounded-2xl border border-brand-border p-12">
         <CircularLoader
           size="lg"
           label="Loading Application"
-          sublabel="Fetching candidate record details..."
+          sublabel="Fetching applicant details..."
         />
       </div>
     )
