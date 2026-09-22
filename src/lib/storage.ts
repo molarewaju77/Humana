@@ -1,206 +1,19 @@
-import type { Application, ApplicationStatus, AdminNote, StatusHistoryEntry } from './types'
-import { supabase } from './supabase'
+import type {
+  Application,
+  ApplicationStatus,
+  AdminNote,
+  StatusHistoryEntry,
+} from "./types";
+import { supabase } from "./supabase";
 
-const APPLICATIONS_KEY = 'hamana_applications'
-
-const MOCK_APPLICATIONS: Application[] = [
-  {
-    id: 'mock-app-001',
-    referenceNumber: 'HUM-2026-89421',
-    submittedAt: '2026-09-12T14:32:00.000Z',
-    status: 'under_review',
-    personalInfo: {
-      firstName: 'Sarah',
-      lastName: 'Jenkins',
-      dateOfBirth: '1990-05-14',
-      gender: 'Female',
-      maritalStatus: 'Married',
-      selfIntroduction: 'Passionate registered nurse with 6 years of experience in clinical care management and telehealth patient advocacy. Excited to contribute to Humana’s care navigation team.',
-      email: 'sarah.jenkins@example.com',
-      phone: '+1 (555) 382-9102',
-      address: '742 Evergreen Terrace',
-      city: 'Louisville',
-      state: 'KY',
-      zipCode: '40204',
-      country: 'United States',
-      socialHandle: 'yes',
-      linkedin: 'https://linkedin.com/in/sarah-jenkins-rn',
-      portfolio: 'https://sarahjenkins-health.com',
-    },
-    employmentHistory: {
-      currentlyEmployed: 'yes',
-      howObtained: 'Humana Careers Portal Direct Application',
-      previousTitles: 'Senior Registered Nurse, Care Lead',
-      previousEmployers: 'Norton Healthcare, Baptist Health Louisville',
-      responsibilities: 'Managed team of 8 triage nurses, coordinated patient treatment plans, utilized EHR systems, ensured HIPAA compliance and high patient satisfaction scores.',
-      yearsExperience: '6 years',
-      whyRightCandidate: 'Proven track record in healthcare coordination, strong patient empathy, and deep familiarity with Kentucky healthcare networks.',
-    },
-    experience: {
-      positionTypes: 'Clinical & Nursing',
-      relevantExperience: '6 years in acute care, patient triage, and telehealth consultation.',
-      keySkills: 'Patient Advocacy, Triage, Epic EHR, Care Coordination, CPR/BLS Certified, Clinical Analytics',
-      proudAchievement: 'Reduced patient wait times in clinic by 28% through streamlined intake protocols.',
-      hasHPPrinter: 'yes',
-      checkPrintingExp: 'yes',
-      resumeFileName: 'Sarah_Jenkins_RN_Resume_2026.pdf',
-      portfolioFileName: 'Clinical_Certifications_Bundle.pdf',
-    },
-    workPreferences: {
-      employmentType: 'full-time',
-      flexibleHours: 'yes',
-      workArrangement: 'hybrid',
-      roleType: 'Clinical Care Manager',
-      tenureIntent: 'Long-term career (3+ years)',
-      companySizePreference: 'Enterprise (10,000+ employees)',
-      paymentPreference: 'biweekly',
-      mobileCarrier: 'Verizon Wireless',
-      mobilePlanType: 'postpaid',
-    },
-    additionalInfo: {
-      hasCreditCard: 'yes',
-      creditCardBank: 'Chase Bank',
-      hasCreditCardDebt: 'no',
-      creditScore: '740 - 799 (Very Good)',
-      bankUsed: 'PNC Bank',
-      has401k: 'yes',
-      plan401kProvider: 'Fidelity Investments',
-      filedTaxes: 'yes',
-      militaryService: 'no',
-      workAuthorized: 'yes',
-      trainingWillingness: 'yes',
-      hasIdMe: 'yes',
-      ssn: '***-**-6789',
-      idFrontFileName: 'State_Driver_License_Front.jpg',
-      idBackFileName: 'State_Driver_License_Back.jpg',
-      ssnCardFileName: 'SSN_Verification_Card.pdf',
-      addressConfirmed: true,
-      policyAccepted: true,
-      additionalInfo: 'Available to start within 2 weeks of offer.',
-    },
-    statusHistory: [
-      {
-        status: 'pending',
-        changedAt: '2026-09-12T14:32:00.000Z',
-        note: 'Application submitted successfully by candidate.',
-      },
-      {
-        status: 'under_review',
-        changedAt: '2026-09-13T09:15:00.000Z',
-        note: 'Assigned to HR recruitment manager for initial credential verification.',
-      },
-    ],
-    adminNotes: [
-      {
-        id: 'note-1',
-        content: 'Candidate has strong clinical background in Louisville area. Recommended for direct manager review.',
-        createdAt: '2026-09-13T10:00:00.000Z',
-      },
-    ],
-  },
-  {
-    id: 'mock-app-002',
-    referenceNumber: 'HUM-2026-73109',
-    submittedAt: '2026-09-11T11:20:00.000Z',
-    status: 'approved',
-    personalInfo: {
-      firstName: 'David',
-      lastName: 'Miller',
-      dateOfBirth: '1988-11-22',
-      gender: 'Male',
-      maritalStatus: 'Single',
-      selfIntroduction: 'Healthcare data scientist specializing in predictive analytics, SQL, Python, and machine learning models for population health management.',
-      email: 'david.miller@example.com',
-      phone: '+1 (555) 918-2041',
-      address: '1204 Main Street, Suite 400',
-      city: 'Lexington',
-      state: 'KY',
-      zipCode: '40507',
-      country: 'United States',
-      socialHandle: 'yes',
-      linkedin: 'https://linkedin.com/in/davidmiller-data',
-      portfolio: 'https://github.com/davidmiller-data',
-    },
-    employmentHistory: {
-      currentlyEmployed: 'yes',
-      howObtained: 'Humana Employee Referral',
-      previousTitles: 'Senior Data Analyst, BI Developer',
-      previousEmployers: 'Anthem, Lexmark International',
-      responsibilities: 'Built automated ETL pipelines, developed executive dashboards, optimized claims data models, and presented insights to clinical leadership.',
-      yearsExperience: '8 years',
-      whyRightCandidate: 'Deep expertise in health data, strong SQL/Python skills, and passion for improving member health outcomes through data.',
-    },
-    experience: {
-      positionTypes: 'Technology & Health Analytics',
-      relevantExperience: '8 years in data engineering, BI visualization, and predictive modeling.',
-      keySkills: 'SQL, Python, Tableau, AWS, Snowflake, Healthcare Claims Analytics, ETL, Machine Learning',
-      proudAchievement: 'Developed risk stratification model that identified high-risk care management candidates 45 days earlier.',
-      hasHPPrinter: 'yes',
-      checkPrintingExp: 'no',
-      resumeFileName: 'David_Miller_Data_Science_Resume.pdf',
-      portfolioFileName: 'Data_Projects_Portfolio.pdf',
-    },
-    workPreferences: {
-      employmentType: 'full-time',
-      flexibleHours: 'yes',
-      workArrangement: 'remote',
-      roleType: 'Senior Healthcare Data Analyst',
-      tenureIntent: 'Long-term career (3+ years)',
-      companySizePreference: 'Enterprise (10,000+ employees)',
-      paymentPreference: 'biweekly',
-      mobileCarrier: 'AT&T Mobility',
-      mobilePlanType: 'postpaid',
-    },
-    additionalInfo: {
-      hasCreditCard: 'yes',
-      creditCardBank: 'Bank of America',
-      hasCreditCardDebt: 'no',
-      creditScore: '800+ (Exceptional)',
-      bankUsed: 'Fifth Third Bank',
-      has401k: 'yes',
-      plan401kProvider: 'Vanguard',
-      filedTaxes: 'yes',
-      militaryService: 'no',
-      workAuthorized: 'yes',
-      trainingWillingness: 'yes',
-      hasIdMe: 'yes',
-      ssn: '***-**-4321',
-      idFrontFileName: 'KY_Driver_License_Front.jpg',
-      idBackFileName: 'KY_Driver_License_Back.jpg',
-      ssnCardFileName: 'SSN_Verification.pdf',
-      addressConfirmed: true,
-      policyAccepted: true,
-      additionalInfo: 'Remote setup ready with high-speed fiber internet.',
-    },
-    statusHistory: [
-      {
-        status: 'pending',
-        changedAt: '2026-09-11T11:20:00.000Z',
-        note: 'Application received.',
-      },
-      {
-        status: 'under_review',
-        changedAt: '2026-09-11T15:00:00.000Z',
-        note: 'Resume reviewed by Analytics Lead.',
-      },
-      {
-        status: 'approved',
-        changedAt: '2026-09-12T16:30:00.000Z',
-        note: 'Application approved by recruiting manager.',
-      },
-    ],
-    adminNotes: [
-      {
-        id: 'note-2',
-        content: 'Passed initial recruiter call. High technical aptitude in Snowflake and Python.',
-        createdAt: '2026-09-12T16:35:00.000Z',
-      },
-    ],
-  },
-]
+const APPLICATIONS_KEY = "hamana_applications";
 
 // Map DB row to Application object
-function mapRowToApplication(row: any, history: StatusHistoryEntry[] = [], notes: AdminNote[] = []): Application {
+function mapRowToApplication(
+  row: any,
+  history: StatusHistoryEntry[] = [],
+  notes: AdminNote[] = [],
+): Application {
   return {
     id: row.id,
     referenceNumber: row.reference_number,
@@ -220,54 +33,54 @@ function mapRowToApplication(row: any, history: StatusHistoryEntry[] = [], notes
       state: row.state,
       zipCode: row.zip_code,
       country: row.country,
-      socialHandle: row.social_handle || 'no',
+      socialHandle: row.social_handle || "no",
       linkedin: row.linkedin,
       portfolio: row.portfolio,
     },
     employmentHistory: {
-      currentlyEmployed: row.currently_employed || 'no',
-      howObtained: row.how_obtained || '',
-      previousTitles: row.previous_titles || '',
-      previousEmployers: row.previous_employers || '',
-      responsibilities: row.responsibilities || '',
-      yearsExperience: row.years_experience || '',
-      whyRightCandidate: row.why_right_candidate || '',
+      currentlyEmployed: row.currently_employed || "no",
+      howObtained: row.how_obtained || "",
+      previousTitles: row.previous_titles || "",
+      previousEmployers: row.previous_employers || "",
+      responsibilities: row.responsibilities || "",
+      yearsExperience: row.years_experience || "",
+      whyRightCandidate: row.why_right_candidate || "",
     },
     experience: {
-      positionTypes: row.position_types || '',
-      relevantExperience: row.relevant_experience || '',
-      keySkills: row.key_skills || '',
-      proudAchievement: row.proud_achievement || '',
-      hasHPPrinter: row.has_hp_printer || 'no',
-      checkPrintingExp: row.check_printing_exp || 'no',
+      positionTypes: row.position_types || "",
+      relevantExperience: row.relevant_experience || "",
+      keySkills: row.key_skills || "",
+      proudAchievement: row.proud_achievement || "",
+      hasHPPrinter: row.has_hp_printer || "no",
+      checkPrintingExp: row.check_printing_exp || "no",
       resumeFileName: row.resume_file_name,
       portfolioFileName: row.portfolio_file_name,
     },
     workPreferences: {
-      employmentType: row.employment_type || 'full-time',
-      flexibleHours: row.flexible_hours || 'yes',
-      workArrangement: row.work_arrangement || 'remote',
-      roleType: row.role_type || '',
-      tenureIntent: row.tenure_intent || '',
+      employmentType: row.employment_type || "full-time",
+      flexibleHours: row.flexible_hours || "yes",
+      workArrangement: row.work_arrangement || "remote",
+      roleType: row.role_type || "",
+      tenureIntent: row.tenure_intent || "",
       companySizePreference: row.company_size_preference,
-      paymentPreference: row.payment_preference || 'biweekly',
-      mobileCarrier: row.mobile_carrier || '',
-      mobilePlanType: row.mobile_plan_type || 'postpaid',
+      paymentPreference: row.payment_preference || "biweekly",
+      mobileCarrier: row.mobile_carrier || "",
+      mobilePlanType: row.mobile_plan_type || "postpaid",
     },
     additionalInfo: {
-      hasCreditCard: row.has_credit_card || 'no',
+      hasCreditCard: row.has_credit_card || "no",
       creditCardBank: row.credit_card_bank,
-      hasCreditCardDebt: row.has_credit_card_debt || 'no',
-      creditScore: row.credit_score || '',
-      bankUsed: row.bank_used || '',
-      has401k: row.has_401k || 'no',
+      hasCreditCardDebt: row.has_credit_card_debt || "no",
+      creditScore: row.credit_score || "",
+      bankUsed: row.bank_used || "",
+      has401k: row.has_401k || "no",
       plan401kProvider: row.plan_401k_provider,
-      filedTaxes: row.filed_taxes || 'yes',
-      militaryService: row.military_service || 'no',
-      workAuthorized: row.work_authorized || 'yes',
-      trainingWillingness: row.training_willingness || 'yes',
-      hasIdMe: row.has_id_me || 'no',
-      ssn: row.ssn || '',
+      filedTaxes: row.filed_taxes || "yes",
+      militaryService: row.military_service || "no",
+      workAuthorized: row.work_authorized || "yes",
+      trainingWillingness: row.training_willingness || "yes",
+      hasIdMe: row.has_id_me || "no",
+      ssn: row.ssn || "",
       idFrontFileName: row.id_front_file_name,
       idBackFileName: row.id_back_file_name,
       ssnCardFileName: row.ssn_card_file_name,
@@ -277,16 +90,16 @@ function mapRowToApplication(row: any, history: StatusHistoryEntry[] = [], notes
     },
     statusHistory: history,
     adminNotes: notes,
-  }
+  };
 }
 
 // Map Application object to DB row
 function mapApplicationToRow(app: Application) {
-  const pi = app.personalInfo
-  const eh = app.employmentHistory
-  const ex = app.experience
-  const wp = app.workPreferences
-  const ai = app.additionalInfo
+  const pi = app.personalInfo;
+  const eh = app.employmentHistory;
+  const ex = app.experience;
+  const wp = app.workPreferences;
+  const ai = app.additionalInfo;
 
   return {
     id: app.id,
@@ -352,44 +165,47 @@ function mapApplicationToRow(app: Application) {
     address_confirmed: ai.addressConfirmed,
     policy_accepted: ai.policyAccepted,
     additional_info: ai.additionalInfo || null,
-  }
+  };
 }
 
 // Sync from Supabase DB
 export async function fetchApplicationsFromSupabase(): Promise<Application[]> {
   try {
     const { data: appRows, error: appError } = await supabase
-      .from('applications')
-      .select('*')
-      .order('submitted_at', { ascending: false })
+      .from("applications")
+      .select("*")
+      .order("submitted_at", { ascending: false });
 
     if (appError || !appRows) {
-      console.warn('Supabase fetch applications error/fallback:', appError?.message)
-      return getApplicationsLocal()
+      console.warn(
+        "Supabase fetch applications error/fallback:",
+        appError?.message,
+      );
+      return getApplicationsLocal();
     }
 
-    const appIds = appRows.map((r) => r.id)
+    const appIds = appRows.map((r) => r.id);
 
     // Fetch status history
-    let statusHistoryRows: any[] = []
+    let statusHistoryRows: any[] = [];
     if (appIds.length > 0) {
       const { data: shData } = await supabase
-        .from('status_history')
-        .select('*')
-        .in('application_id', appIds)
-        .order('changed_at', { ascending: true })
-      if (shData) statusHistoryRows = shData
+        .from("status_history")
+        .select("*")
+        .in("application_id", appIds)
+        .order("changed_at", { ascending: true });
+      if (shData) statusHistoryRows = shData;
     }
 
     // Fetch admin notes
-    let adminNotesRows: any[] = []
+    let adminNotesRows: any[] = [];
     if (appIds.length > 0) {
       const { data: anData } = await supabase
-        .from('admin_notes')
-        .select('*')
-        .in('application_id', appIds)
-        .order('created_at', { ascending: true })
-      if (anData) adminNotesRows = anData
+        .from("admin_notes")
+        .select("*")
+        .in("application_id", appIds)
+        .order("created_at", { ascending: true });
+      if (anData) adminNotesRows = anData;
     }
 
     const apps = appRows.map((row) => {
@@ -399,7 +215,7 @@ export async function fetchApplicationsFromSupabase(): Promise<Application[]> {
           status: sh.status as ApplicationStatus,
           changedAt: sh.changed_at,
           note: sh.note,
-        }))
+        }));
 
       const notes: AdminNote[] = adminNotesRows
         .filter((an) => an.application_id === row.id)
@@ -407,79 +223,80 @@ export async function fetchApplicationsFromSupabase(): Promise<Application[]> {
           id: an.id,
           content: an.content,
           createdAt: an.created_at,
-        }))
+        }));
 
-      return mapRowToApplication(row, history, notes)
-    })
+      return mapRowToApplication(row, history, notes);
+    });
 
     // Cache locally
-    localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(apps))
-    return apps
+    localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(apps));
+    return apps;
   } catch (err) {
-    console.error('Failed to fetch from Supabase:', err)
-    return getApplicationsLocal()
+    console.error("Failed to fetch from Supabase:", err);
+    return getApplicationsLocal();
   }
 }
 
 // Local cache getter
 function getApplicationsLocal(): Application[] {
   try {
-    const raw = localStorage.getItem(APPLICATIONS_KEY)
+    const raw = localStorage.getItem(APPLICATIONS_KEY);
     if (!raw) {
-      localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(MOCK_APPLICATIONS))
-      return MOCK_APPLICATIONS
+      return [];
     }
-    return JSON.parse(raw) as Application[]
+    return JSON.parse(raw) as Application[];
   } catch {
-    return MOCK_APPLICATIONS
+    return [];
   }
 }
 
 export function getApplications(): Application[] {
-  return getApplicationsLocal()
+  return getApplicationsLocal();
 }
 
 export function getApplicationById(id: string): Application | undefined {
-  return getApplicationsLocal().find((app) => app.id === id)
+  return getApplicationsLocal().find((app) => app.id === id);
 }
 
 // Async save application to Supabase & localStorage
 export async function saveApplicationAsync(app: Application): Promise<void> {
   // Update local storage immediately
-  const apps = getApplicationsLocal()
-  const existingIndex = apps.findIndex((a) => a.id === app.id)
+  const apps = getApplicationsLocal();
+  const existingIndex = apps.findIndex((a) => a.id === app.id);
   if (existingIndex >= 0) {
-    apps[existingIndex] = app
+    apps[existingIndex] = app;
   } else {
-    apps.unshift(app)
+    apps.unshift(app);
   }
-  localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(apps))
+  localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(apps));
 
   // Persist to Supabase
   try {
-    const dbRow = mapApplicationToRow(app)
-    const { error: upsertError } = await supabase.from('applications').upsert(dbRow)
+    const dbRow = mapApplicationToRow(app);
+    const { error: upsertError } = await supabase
+      .from("applications")
+      .upsert(dbRow);
     if (upsertError) {
-      console.error('Supabase application upsert error:', upsertError.message)
+      console.error("Supabase application upsert error:", upsertError.message);
     }
 
     // Save initial status history entry
     if (app.statusHistory.length > 0) {
-      const initialEntry = app.statusHistory[0]
-      await supabase.from('status_history').insert({
+      const initialEntry = app.statusHistory[0];
+      await supabase.from("status_history").insert({
         application_id: app.id,
         status: initialEntry.status,
         changed_at: initialEntry.changedAt,
         note: initialEntry.note || null,
-      })
+      });
     }
   } catch (err) {
-    console.error('Supabase save exception:', err)
+    console.error("Supabase save exception:", err);
   }
 }
 
 export function saveApplication(app: Application): void {
-  saveApplicationAsync(app)
+  saveApplicationAsync(app);
 }
 
 // Async update status in Supabase & localStorage
@@ -488,33 +305,33 @@ export async function updateApplicationStatusAsync(
   status: ApplicationStatus,
   note?: string,
 ): Promise<Application | undefined> {
-  const apps = getApplicationsLocal()
-  const index = apps.findIndex((a) => a.id === id)
-  if (index < 0) return undefined
+  const apps = getApplicationsLocal();
+  const index = apps.findIndex((a) => a.id === id);
+  if (index < 0) return undefined;
 
-  const changedAt = new Date().toISOString()
-  const entry: StatusHistoryEntry = { status, changedAt, note }
+  const changedAt = new Date().toISOString();
+  const entry: StatusHistoryEntry = { status, changedAt, note };
 
   apps[index] = {
     ...apps[index],
     status,
     statusHistory: [...apps[index].statusHistory, entry],
-  }
-  localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(apps))
+  };
+  localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(apps));
 
   try {
-    await supabase.from('applications').update({ status }).eq('id', id)
-    await supabase.from('status_history').insert({
+    await supabase.from("applications").update({ status }).eq("id", id);
+    await supabase.from("status_history").insert({
       application_id: id,
       status,
       changed_at: changedAt,
       note: note || null,
-    })
+    });
   } catch (err) {
-    console.error('Supabase update status error:', err)
+    console.error("Supabase update status error:", err);
   }
 
-  return apps[index]
+  return apps[index];
 }
 
 export function updateApplicationStatus(
@@ -522,60 +339,66 @@ export function updateApplicationStatus(
   status: ApplicationStatus,
   note?: string,
 ): Application | undefined {
-  updateApplicationStatusAsync(id, status, note)
-  const apps = getApplicationsLocal()
-  return apps.find((a) => a.id === id)
+  updateApplicationStatusAsync(id, status, note);
+  const apps = getApplicationsLocal();
+  return apps.find((a) => a.id === id);
 }
 
 // Async add admin note in Supabase & localStorage
-export async function addAdminNoteAsync(id: string, content: string): Promise<Application | undefined> {
-  const apps = getApplicationsLocal()
-  const index = apps.findIndex((a) => a.id === id)
-  if (index < 0) return undefined
+export async function addAdminNoteAsync(
+  id: string,
+  content: string,
+): Promise<Application | undefined> {
+  const apps = getApplicationsLocal();
+  const index = apps.findIndex((a) => a.id === id);
+  if (index < 0) return undefined;
 
-  const noteId = crypto.randomUUID()
-  const createdAt = new Date().toISOString()
+  const noteId = crypto.randomUUID();
+  const createdAt = new Date().toISOString();
 
   const note: AdminNote = {
     id: noteId,
     content,
     createdAt,
-  }
+  };
 
   apps[index] = {
     ...apps[index],
     adminNotes: [...apps[index].adminNotes, note],
-  }
-  localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(apps))
+  };
+  localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(apps));
 
   try {
-    await supabase.from('admin_notes').insert({
+    await supabase.from("admin_notes").insert({
       id: noteId,
       application_id: id,
       content,
       created_at: createdAt,
-    })
+    });
   } catch (err) {
-    console.error('Supabase add note error:', err)
+    console.error("Supabase add note error:", err);
   }
 
-  return apps[index]
+  return apps[index];
 }
 
-export function addAdminNote(id: string, content: string): Application | undefined {
-  addAdminNoteAsync(id, content)
-  const apps = getApplicationsLocal()
-  return apps.find((a) => a.id === id)
+export function addAdminNote(
+  id: string,
+  content: string,
+): Application | undefined {
+  addAdminNoteAsync(id, content);
+  const apps = getApplicationsLocal();
+  return apps.find((a) => a.id === id);
 }
 
 export function getApplicationStats() {
-  const apps = getApplicationsLocal()
+  const apps = getApplicationsLocal();
   return {
     total: apps.length,
-    pending: apps.filter((a) => a.status === 'pending').length,
-    underReview: apps.filter((a) => a.status === 'under_review').length,
-    approved: apps.filter((a) => a.status === 'approved').length,
-    rejected: apps.filter((a) => a.status === 'rejected').length,
-    closed: apps.filter((a) => a.status === 'closed').length,
-  }
+    pending: apps.filter((a) => a.status === "pending").length,
+    underReview: apps.filter((a) => a.status === "under_review").length,
+    approved: apps.filter((a) => a.status === "approved").length,
+    rejected: apps.filter((a) => a.status === "rejected").length,
+    closed: apps.filter((a) => a.status === "closed").length,
+  };
 }

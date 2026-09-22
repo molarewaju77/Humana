@@ -3,8 +3,6 @@ import { uploadDocumentFile } from './supabase'
 interface PendingItem {
   file: File
   previewUrl?: string
-  uploadedUrl?: string
-  uploadPromise?: Promise<string | null>
 }
 
 const pendingFiles = new Map<string, PendingItem>()
@@ -18,6 +16,10 @@ function readFileAsDataUrl(file: File): Promise<string> {
   })
 }
 
+/**
+ * Stores the selected file locally in memory with an instant preview.
+ * Zero network requests are made until the candidate clicks "Submit Application".
+ */
 export function setPendingFile(key: string, file: File): { previewUrl?: string } {
   // Revoke old object URL if exists
   const existing = pendingFiles.get(key)
@@ -38,28 +40,7 @@ export function setPendingFile(key: string, file: File): { previewUrl?: string }
     }
   }
 
-  const dataUrlPromise = readFileAsDataUrl(file)
-
-  // Start background upload immediately so it's already finished by submit time
-  const uploadPromise = uploadDocumentFile(file, 'candidate-uploads')
-    .then((url) => {
-      const item = pendingFiles.get(key)
-      if (item) {
-        item.uploadedUrl = url || undefined
-      }
-      return url
-    })
-    .catch(async (err) => {
-      console.warn(`Supabase upload failed for ${key}, falling back to data URL:`, err)
-      const dataUri = await dataUrlPromise
-      const item = pendingFiles.get(key)
-      if (item) {
-        item.uploadedUrl = dataUri
-      }
-      return dataUri
-    })
-
-  pendingFiles.set(key, { file, previewUrl, uploadPromise })
+  pendingFiles.set(key, { file, previewUrl })
   return { previewUrl }
 }
 
@@ -93,8 +74,8 @@ export function clearAllPendingFiles() {
 }
 
 /**
- * Resolves all pending background uploads.
- * If already uploaded in the background, completes in 0ms!
+ * Uploads all staged files to Supabase Storage only upon final application submission.
+ * Parallel uploads for speed, with resilient fallback.
  */
 export async function uploadAllPendingFiles(
   folder: string = 'candidate-uploads'
@@ -107,21 +88,15 @@ export async function uploadAllPendingFiles(
   }
 
   const uploadPromises = entries.map(async ([key, item]) => {
-    // If already uploaded in background, return immediately
-    if (item.uploadedUrl) {
-      results[key] = item.uploadedUrl
-      return
-    }
-
     try {
-      const targetPromise = item.uploadPromise || uploadDocumentFile(item.file, folder)
-      const url = await targetPromise
+      const url = await uploadDocumentFile(item.file, folder)
       if (url) {
         results[key] = url
       } else {
         results[key] = await readFileAsDataUrl(item.file)
       }
-    } catch {
+    } catch (err) {
+      console.warn(`Upload fallback for ${key}:`, err)
       results[key] = await readFileAsDataUrl(item.file)
     }
   })
