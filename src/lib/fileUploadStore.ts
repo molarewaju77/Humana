@@ -7,17 +7,8 @@ interface PendingItem {
 
 const pendingFiles = new Map<string, PendingItem>()
 
-function readFileAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = () => resolve(file.name)
-    reader.readAsDataURL(file)
-  })
-}
-
 /**
- * Stores the selected file locally in memory with an instant preview.
+ * Stores the selected file locally in memory with an instant preview URL.
  * Zero network requests are made until the candidate clicks "Submit Application".
  */
 export function setPendingFile(key: string, file: File): { previewUrl?: string } {
@@ -74,8 +65,8 @@ export function clearAllPendingFiles() {
 }
 
 /**
- * Uploads all staged files to Supabase Storage only upon final application submission.
- * Parallel uploads for speed, with resilient fallback.
+ * Uploads all staged files to Supabase Storage in parallel only upon final application submission.
+ * Returns a map of fieldName -> public Supabase storage URL.
  */
 export async function uploadAllPendingFiles(
   folder: string = 'candidate-uploads'
@@ -89,15 +80,13 @@ export async function uploadAllPendingFiles(
 
   const uploadPromises = entries.map(async ([key, item]) => {
     try {
-      const url = await uploadDocumentFile(item.file, folder)
-      if (url) {
-        results[key] = url
-      } else {
-        results[key] = await readFileAsDataUrl(item.file)
+      const publicUrl = await uploadDocumentFile(item.file, folder)
+      if (publicUrl) {
+        results[key] = publicUrl
       }
-    } catch (err) {
-      console.warn(`Upload fallback for ${key}:`, err)
-      results[key] = await readFileAsDataUrl(item.file)
+    } catch (err: any) {
+      console.error(`Upload error for ${key} (${item.file.name}):`, err)
+      throw new Error(`Failed to upload ${item.file.name}: ${err?.message || 'Upload error'}`)
     }
   })
 

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
   FileText,
@@ -8,11 +8,10 @@ import {
   CheckCircle,
   XCircle,
   ArrowRight,
+  RotateCw,
+  Loader2,
 } from "lucide-react";
-import {
-  getApplications,
-  fetchApplicationsFromSupabase,
-} from "../../lib/storage";
+import { fetchApplications, calculateStats } from "../../lib/storage";
 import type { Application } from "../../lib/types";
 import { formatDate } from "../../lib/utils";
 import StatusBadge from "../../components/ui/StatusBadge";
@@ -20,36 +19,39 @@ import EmptyState from "../../components/ui/EmptyState";
 import { useToast } from "../../components/ui/Toast";
 
 export default function AdminDashboardPage() {
-  const [apps, setApps] = useState<Application[]>(() => getApplications());
+  const [apps, setApps] = useState<Application[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const { addToast } = useToast();
 
-  useEffect(() => {
-    fetchApplicationsFromSupabase()
-      .then((data) => {
-        setApps(data);
-      })
-      .catch((error: any) => {
-        console.error("Dashboard fetch applications failed:", error);
-        setApps([]);
-        addToast(
-          "error",
-          "Failed to load applications",
-          error?.message || "Check your Supabase connection and credentials.",
-        );
-      });
+  const loadData = useCallback(async (isManualRefresh = false) => {
+    if (isManualRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+
+    try {
+      const data = await fetchApplications();
+      setApps(data);
+    } catch (error: any) {
+      console.error("Dashboard fetch applications failed:", error);
+      addToast(
+        "error",
+        "Failed to load applications",
+        error?.message || "Check your Supabase connection and database policies."
+      );
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, [addToast]);
 
-  const stats = useMemo(() => {
-    return {
-      total: apps.length,
-      pending: apps.filter((a) => a.status === "pending").length,
-      underReview: apps.filter((a) => a.status === "under_review").length,
-      approved: apps.filter((a) => a.status === "approved").length,
-      rejected: apps.filter((a) => a.status === "rejected").length,
-      closed: apps.filter((a) => a.status === "closed").length,
-    };
-  }, [apps]);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
+  const stats = useMemo(() => calculateStats(apps), [apps]);
   const recentApps = useMemo(() => apps.slice(0, 5), [apps]);
 
   const statCards = [
@@ -93,12 +95,24 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Page title */}
-      <div>
-        <h1 className="text-2xl font-bold text-brand-deeptext">Dashboard</h1>
-        <p className="text-sm text-brand-secondarytext mt-1">
-          Overview of all recruitment activity
-        </p>
+      {/* Page title & Actions */}
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-brand-deeptext">Dashboard</h1>
+          <p className="text-sm text-brand-secondarytext mt-1">
+            Overview of all recruitment activity from Supabase
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => loadData(true)}
+          disabled={loading || refreshing}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-border bg-white text-xs font-medium text-brand-deeptext hover:bg-brand-softbg transition-colors disabled:opacity-50"
+          title="Refresh Data"
+        >
+          <RotateCw size={13} className={refreshing ? "animate-spin text-primary" : ""} />
+          <span className="hidden sm:inline">Refresh</span>
+        </button>
       </div>
 
       {/* Stats grid */}
@@ -114,7 +128,7 @@ export default function AdminDashboardPage() {
               <Icon size={18} />
             </div>
             <p className="text-2xl font-bold text-brand-deeptext tabular-nums">
-              {value}
+              {loading ? "—" : value}
             </p>
             <p className="text-xs text-brand-secondarytext mt-1 leading-tight">
               {label}
@@ -137,7 +151,12 @@ export default function AdminDashboardPage() {
           </Link>
         </div>
 
-        {recentApps.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-16 text-brand-secondarytext gap-2">
+            <Loader2 size={20} className="animate-spin text-primary" />
+            <span className="text-sm">Loading applications from Supabase…</span>
+          </div>
+        ) : recentApps.length === 0 ? (
           <EmptyState
             icon={<FileText size={24} />}
             title="No applications yet"

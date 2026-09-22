@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useParams, Link } from 'react-router-dom'
 import {
   ArrowLeft,
   User,
@@ -13,19 +13,18 @@ import {
   Plus,
   ChevronDown,
   DollarSign,
-  Printer,
-  CheckCircle,
-  FileCheck,
-  Copy,
   Check,
   ExternalLink,
   Download,
   Loader2,
   Image as ImageIcon,
+  Copy,
+  CheckCircle,
+  FileCheck,
 } from 'lucide-react'
-import { getApplicationById, updateApplicationStatus, addAdminNote } from '../../lib/storage'
+import { fetchApplicationById, updateApplicationStatus, addAdminNote } from '../../lib/storage'
 import { supabase, BUCKET_NAME } from '../../lib/supabase'
-import type { ApplicationStatus } from '../../lib/types'
+import type { Application, ApplicationStatus } from '../../lib/types'
 import { formatDateTime, getStatusLabel } from '../../lib/utils'
 import StatusBadge from '../../components/ui/StatusBadge'
 import Button from '../../components/ui/Button'
@@ -220,19 +219,79 @@ function maskSSN(ssn?: string) {
 
 export default function AdminApplicationDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
   const { addToast } = useToast()
 
-  const [app, setApp] = useState(() => (id ? getApplicationById(id) : undefined))
+  const [app, setApp] = useState<Application | null>(null)
+  const [loading, setLoading] = useState(true)
   const [newNote, setNewNote] = useState('')
   const [savingNote, setSavingNote] = useState(false)
-  const [selectedStatus, setSelectedStatus] = useState<ApplicationStatus | ''>(app?.status || '')
+  const [updatingStatus, setUpdatingStatus] = useState(false)
+  const [selectedStatus, setSelectedStatus] = useState<ApplicationStatus | ''>('')
+
+  useEffect(() => {
+    if (!id) return
+    setLoading(true)
+    fetchApplicationById(id)
+      .then((data) => {
+        setApp(data)
+        if (data) {
+          setSelectedStatus(data.status)
+        }
+      })
+      .catch((err: any) => {
+        console.error('Failed to load application from Supabase:', err)
+        addToast('error', 'Failed to load application', err?.message || 'Check database connection')
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [id, addToast])
+
+  async function handleStatusUpdate() {
+    if (!selectedStatus || selectedStatus === app?.status || !app) return
+    setUpdatingStatus(true)
+    try {
+      const updated = await updateApplicationStatus(app.id, selectedStatus as ApplicationStatus)
+      setApp(updated)
+      addToast('success', 'Status updated', `Application moved to ${getStatusLabel(selectedStatus as ApplicationStatus)}.`)
+    } catch (err: any) {
+      console.error('Failed to update application status:', err)
+      addToast('error', 'Status update failed', err?.message || 'Could not update status')
+    } finally {
+      setUpdatingStatus(false)
+    }
+  }
+
+  async function handleAddNote() {
+    if (!newNote.trim() || !app) return
+    setSavingNote(true)
+    try {
+      const createdNote = await addAdminNote(app.id, newNote.trim())
+      setApp((prev) => (prev ? { ...prev, adminNotes: [...prev.adminNotes, createdNote] } : prev))
+      setNewNote('')
+      addToast('success', 'Note added', 'Internal recruiter note saved to Supabase.')
+    } catch (err: any) {
+      console.error('Failed to add note:', err)
+      addToast('error', 'Failed to add note', err?.message || 'Could not save note')
+    } finally {
+      setSavingNote(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
+        <Loader2 size={24} className="animate-spin text-primary" />
+        <p className="text-sm font-medium text-brand-deeptext">Loading application from Supabase…</p>
+      </div>
+    )
+  }
 
   if (!app) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <p className="text-base font-semibold text-brand-deeptext">Application not found</p>
-        <p className="text-xs text-brand-secondarytext mt-1">This application may have been removed or does not exist.</p>
+        <p className="text-xs text-brand-secondarytext mt-1">This application may have been removed or does not exist in Supabase.</p>
         <Link to="/admin/applications" className="mt-5">
           <Button variant="outline" size="sm" leftIcon={<ArrowLeft size={14} />}>Back to Applications</Button>
         </Link>
@@ -241,29 +300,6 @@ export default function AdminApplicationDetailPage() {
   }
 
   const { personalInfo: pi, employmentHistory: eh, experience: ex, workPreferences: wp, additionalInfo: ai } = app
-
-  function handleStatusUpdate() {
-    if (!selectedStatus || selectedStatus === app!.status) return
-    const updated = updateApplicationStatus(app!.id, selectedStatus as ApplicationStatus)
-    if (updated) {
-      setApp(updated)
-      addToast('success', 'Status updated', `Application moved to ${getStatusLabel(selectedStatus as ApplicationStatus)}.`)
-    }
-  }
-
-  async function handleAddNote() {
-    if (!newNote.trim()) return
-    setSavingNote(true)
-    await new Promise((r) => setTimeout(r, 400))
-    const updated = addAdminNote(app!.id, newNote.trim())
-    if (updated) {
-      setApp(updated)
-      setNewNote('')
-      addToast('success', 'Note added')
-    }
-    setSavingNote(false)
-  }
-
   const fullName = `${pi.firstName} ${pi.lastName}`
   const fullAddress = [pi.address, pi.city, pi.state, pi.zipCode, pi.country].filter(Boolean).join(', ')
 
@@ -351,7 +387,8 @@ export default function AdminApplicationDetailPage() {
             <Button
               size="sm"
               onClick={handleStatusUpdate}
-              disabled={!selectedStatus || selectedStatus === app.status}
+              isLoading={updatingStatus}
+              disabled={!selectedStatus || selectedStatus === app.status || updatingStatus}
               className="h-9 text-xs px-3.5 font-medium shrink-0 rounded-lg"
             >
               Update Status
@@ -507,7 +544,7 @@ export default function AdminApplicationDetailPage() {
               <h2 className="text-xs font-semibold uppercase tracking-wider text-brand-deeptext">Internal Notes</h2>
             </div>
             <p className="text-[11px] text-brand-secondarytext mb-2.5">
-              Private recruiter notes (not visible to applicants).
+              Private recruiter notes (saved directly to Supabase).
             </p>
 
             {app.adminNotes.length === 0 ? (
@@ -537,7 +574,7 @@ export default function AdminApplicationDetailPage() {
               size="sm"
               onClick={handleAddNote}
               isLoading={savingNote}
-              disabled={!newNote.trim()}
+              disabled={!newNote.trim() || savingNote}
               leftIcon={<Plus size={13} />}
               className="mt-2 w-full text-xs h-8"
             >
@@ -549,5 +586,3 @@ export default function AdminApplicationDetailPage() {
     </div>
   )
 }
-
-

@@ -133,9 +133,9 @@ export default function ApplyPage() {
 
       setSubmitted(true)
       window.scrollTo({ top: 0, behavior: 'smooth' })
-    } catch (err) {
+    } catch (err: any) {
       console.error('Submission error:', err)
-      addToast('error', 'Submission failed', 'Please try again. If the problem persists, refresh the page.')
+      addToast('error', 'Submission failed', err?.message || 'Please check your connection and try again.')
     } finally {
       setSubmitting(false)
     }

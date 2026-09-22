@@ -6,13 +6,20 @@ import type {
 } from "./types";
 import { supabase } from "./supabase";
 
-const APPLICATIONS_KEY = "hamana_applications";
+export interface ApplicationStats {
+  total: number;
+  pending: number;
+  underReview: number;
+  approved: number;
+  rejected: number;
+  closed: number;
+}
 
 // Map DB row to Application object
 function mapRowToApplication(
   row: any,
   history: StatusHistoryEntry[] = [],
-  notes: AdminNote[] = [],
+  notes: AdminNote[] = []
 ): Application {
   return {
     id: row.id,
@@ -20,22 +27,22 @@ function mapRowToApplication(
     submittedAt: row.submitted_at,
     status: row.status as ApplicationStatus,
     personalInfo: {
-      firstName: row.first_name,
-      lastName: row.last_name,
-      dateOfBirth: row.date_of_birth,
-      gender: row.gender,
-      maritalStatus: row.marital_status,
-      selfIntroduction: row.self_introduction,
-      email: row.email,
-      phone: row.phone,
-      address: row.address,
-      city: row.city,
-      state: row.state,
-      zipCode: row.zip_code,
-      country: row.country,
+      firstName: row.first_name || "",
+      lastName: row.last_name || "",
+      dateOfBirth: row.date_of_birth || "",
+      gender: row.gender || undefined,
+      maritalStatus: row.marital_status || "",
+      selfIntroduction: row.self_introduction || "",
+      email: row.email || "",
+      phone: row.phone || "",
+      address: row.address || "",
+      city: row.city || "",
+      state: row.state || "",
+      zipCode: row.zip_code || "",
+      country: row.country || "",
       socialHandle: row.social_handle || "no",
-      linkedin: row.linkedin,
-      portfolio: row.portfolio,
+      linkedin: row.linkedin || undefined,
+      portfolio: row.portfolio || undefined,
     },
     employmentHistory: {
       currentlyEmployed: row.currently_employed || "no",
@@ -53,8 +60,8 @@ function mapRowToApplication(
       proudAchievement: row.proud_achievement || "",
       hasHPPrinter: row.has_hp_printer || "no",
       checkPrintingExp: row.check_printing_exp || "no",
-      resumeFileName: row.resume_file_name,
-      portfolioFileName: row.portfolio_file_name,
+      resumeFileName: row.resume_file_name || undefined,
+      portfolioFileName: row.portfolio_file_name || undefined,
     },
     workPreferences: {
       employmentType: row.employment_type || "full-time",
@@ -62,31 +69,31 @@ function mapRowToApplication(
       workArrangement: row.work_arrangement || "remote",
       roleType: row.role_type || "",
       tenureIntent: row.tenure_intent || "",
-      companySizePreference: row.company_size_preference,
+      companySizePreference: row.company_size_preference || undefined,
       paymentPreference: row.payment_preference || "biweekly",
       mobileCarrier: row.mobile_carrier || "",
       mobilePlanType: row.mobile_plan_type || "postpaid",
     },
     additionalInfo: {
       hasCreditCard: row.has_credit_card || "no",
-      creditCardBank: row.credit_card_bank,
+      creditCardBank: row.credit_card_bank || undefined,
       hasCreditCardDebt: row.has_credit_card_debt || "no",
       creditScore: row.credit_score || "",
       bankUsed: row.bank_used || "",
       has401k: row.has_401k || "no",
-      plan401kProvider: row.plan_401k_provider,
+      plan401kProvider: row.plan_401k_provider || undefined,
       filedTaxes: row.filed_taxes || "yes",
       militaryService: row.military_service || "no",
       workAuthorized: row.work_authorized || "yes",
       trainingWillingness: row.training_willingness || "yes",
       hasIdMe: row.has_id_me || "no",
       ssn: row.ssn || "",
-      idFrontFileName: row.id_front_file_name,
-      idBackFileName: row.id_back_file_name,
-      ssnCardFileName: row.ssn_card_file_name,
+      idFrontFileName: row.id_front_file_name || undefined,
+      idBackFileName: row.id_back_file_name || undefined,
+      ssnCardFileName: row.ssn_card_file_name || undefined,
       addressConfirmed: Boolean(row.address_confirmed),
       policyAccepted: Boolean(row.policy_accepted),
-      additionalInfo: row.additional_info,
+      additionalInfo: row.additional_info || undefined,
     },
     statusHistory: history,
     adminNotes: notes,
@@ -168,8 +175,10 @@ function mapApplicationToRow(app: Application) {
   };
 }
 
-// Sync from Supabase DB
-export async function fetchApplicationsFromSupabase(): Promise<Application[]> {
+/**
+ * Fetch all applications directly from Supabase DB, including status history and admin notes.
+ */
+export async function fetchApplications(): Promise<Application[]> {
   try {
     const { data: appRows, error: appError } = await supabase
       .from("applications")
@@ -181,7 +190,7 @@ export async function fetchApplicationsFromSupabase(): Promise<Application[]> {
       throw new Error(appError.message);
     }
 
-    if (!appRows) {
+    if (!appRows || appRows.length === 0) {
       return [];
     }
 
@@ -190,32 +199,42 @@ export async function fetchApplicationsFromSupabase(): Promise<Application[]> {
     // Fetch status history
     let statusHistoryRows: any[] = [];
     if (appIds.length > 0) {
-      const { data: shData } = await supabase
+      const { data: shData, error: shError } = await supabase
         .from("status_history")
         .select("*")
         .in("application_id", appIds)
         .order("changed_at", { ascending: true });
-      if (shData) statusHistoryRows = shData;
+
+      if (shError) {
+        console.warn("Status history fetch error:", shError.message);
+      } else if (shData) {
+        statusHistoryRows = shData;
+      }
     }
 
     // Fetch admin notes
     let adminNotesRows: any[] = [];
     if (appIds.length > 0) {
-      const { data: anData } = await supabase
+      const { data: anData, error: anError } = await supabase
         .from("admin_notes")
         .select("*")
         .in("application_id", appIds)
         .order("created_at", { ascending: true });
-      if (anData) adminNotesRows = anData;
+
+      if (anError) {
+        console.warn("Admin notes fetch error:", anError.message);
+      } else if (anData) {
+        adminNotesRows = anData;
+      }
     }
 
-    const apps = appRows.map((row) => {
+    return appRows.map((row) => {
       const history: StatusHistoryEntry[] = statusHistoryRows
         .filter((sh) => sh.application_id === row.id)
         .map((sh) => ({
           status: sh.status as ApplicationStatus,
           changedAt: sh.changed_at,
-          note: sh.note,
+          note: sh.note || undefined,
         }));
 
       const notes: AdminNote[] = adminNotesRows
@@ -228,177 +247,196 @@ export async function fetchApplicationsFromSupabase(): Promise<Application[]> {
 
       return mapRowToApplication(row, history, notes);
     });
-
-    // Cache locally
-    localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(apps));
-    return apps;
   } catch (err: any) {
     console.error("Failed to fetch from Supabase:", err);
     throw new Error(
-      err?.message || "Failed to load applications from Supabase.",
+      err?.message || "Failed to load applications from Supabase."
     );
   }
 }
 
-// Local cache getter
-function getApplicationsLocal(): Application[] {
+// Backward-compatible alias
+export const fetchApplicationsFromSupabase = fetchApplications;
+
+/**
+ * Fetch a single application by its UUID or reference number from Supabase DB.
+ */
+export async function fetchApplicationById(
+  id: string
+): Promise<Application | null> {
   try {
-    const raw = localStorage.getItem(APPLICATIONS_KEY);
-    if (!raw) {
-      return [];
+    const isUUID =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        id
+      );
+
+    let query = supabase.from("applications").select("*");
+    if (isUUID) {
+      query = query.eq("id", id);
+    } else {
+      query = query.or(`id.eq.${id},reference_number.eq.${id}`);
     }
-    return JSON.parse(raw) as Application[];
-  } catch {
-    return [];
+
+    const { data: appRow, error: appError } = await query.maybeSingle();
+
+    if (appError) {
+      console.error("Supabase fetch application error:", appError.message);
+      throw new Error(appError.message);
+    }
+
+    if (!appRow) {
+      return null;
+    }
+
+    // Fetch status history for this app
+    const { data: shData } = await supabase
+      .from("status_history")
+      .select("*")
+      .eq("application_id", appRow.id)
+      .order("changed_at", { ascending: true });
+
+    // Fetch admin notes for this app
+    const { data: anData } = await supabase
+      .from("admin_notes")
+      .select("*")
+      .eq("application_id", appRow.id)
+      .order("created_at", { ascending: true });
+
+    const history: StatusHistoryEntry[] = (shData || []).map((sh) => ({
+      status: sh.status as ApplicationStatus,
+      changedAt: sh.changed_at,
+      note: sh.note || undefined,
+    }));
+
+    const notes: AdminNote[] = (anData || []).map((an) => ({
+      id: an.id,
+      content: an.content,
+      createdAt: an.created_at,
+    }));
+
+    return mapRowToApplication(appRow, history, notes);
+  } catch (err: any) {
+    console.error("Failed to fetch application by ID:", err);
+    throw err;
   }
 }
 
-export function getApplications(): Application[] {
-  // Prefer the live Supabase applications table. This function is used mainly as a
-  // synchronous fallback during first render, so we intentionally avoid reusing stale
-  // cached local data that can contain old/mock records.
-  return [];
-}
-
-export function getApplicationById(id: string): Application | undefined {
-  return getApplicationsLocal().find((app) => app.id === id);
-}
-
-// Async save application to Supabase & localStorage
-export async function saveApplicationAsync(app: Application): Promise<void> {
-  // Update local storage immediately
-  const apps = getApplicationsLocal();
-  const existingIndex = apps.findIndex((a) => a.id === app.id);
-  if (existingIndex >= 0) {
-    apps[existingIndex] = app;
-  } else {
-    apps.unshift(app);
-  }
-  localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(apps));
-
-  // Persist to Supabase
+/**
+ * Save a new application directly to Supabase DB.
+ */
+export async function saveApplication(app: Application): Promise<void> {
   try {
     const dbRow = mapApplicationToRow(app);
     const { error: upsertError } = await supabase
       .from("applications")
       .upsert(dbRow);
+
     if (upsertError) {
       console.error("Supabase application upsert error:", upsertError.message);
+      throw new Error(upsertError.message);
     }
 
     // Save initial status history entry
     if (app.statusHistory.length > 0) {
       const initialEntry = app.statusHistory[0];
-      await supabase.from("status_history").insert({
+      const { error: shError } = await supabase.from("status_history").insert({
         application_id: app.id,
         status: initialEntry.status,
         changed_at: initialEntry.changedAt,
         note: initialEntry.note || null,
       });
+
+      if (shError) {
+        console.warn("Supabase initial status history insert warning:", shError.message);
+      }
     }
-  } catch (err) {
-    console.error("Supabase save exception:", err);
+  } catch (err: any) {
+    console.error("Supabase save application exception:", err);
+    throw err;
   }
 }
 
-export function saveApplication(app: Application): void {
-  saveApplicationAsync(app);
-}
+// Backward-compatible alias
+export const saveApplicationAsync = saveApplication;
 
-// Async update status in Supabase & localStorage
-export async function updateApplicationStatusAsync(
+/**
+ * Update an application status in Supabase DB and add a status history record.
+ */
+export async function updateApplicationStatus(
   id: string,
   status: ApplicationStatus,
-  note?: string,
-): Promise<Application | undefined> {
-  const apps = getApplicationsLocal();
-  const index = apps.findIndex((a) => a.id === id);
-  if (index < 0) return undefined;
-
+  note?: string
+): Promise<Application> {
   const changedAt = new Date().toISOString();
-  const entry: StatusHistoryEntry = { status, changedAt, note };
 
-  apps[index] = {
-    ...apps[index],
-    status,
-    statusHistory: [...apps[index].statusHistory, entry],
-  };
-  localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(apps));
+  const { error: updateError } = await supabase
+    .from("applications")
+    .update({ status })
+    .eq("id", id);
 
-  try {
-    await supabase.from("applications").update({ status }).eq("id", id);
-    await supabase.from("status_history").insert({
-      application_id: id,
-      status,
-      changed_at: changedAt,
-      note: note || null,
-    });
-  } catch (err) {
-    console.error("Supabase update status error:", err);
+  if (updateError) {
+    console.error("Supabase update status error:", updateError.message);
+    throw new Error(updateError.message);
   }
 
-  return apps[index];
+  const { error: historyError } = await supabase.from("status_history").insert({
+    application_id: id,
+    status,
+    changed_at: changedAt,
+    note: note || null,
+  });
+
+  if (historyError) {
+    console.warn("Supabase status history insert warning:", historyError.message);
+  }
+
+  const updatedApp = await fetchApplicationById(id);
+  if (!updatedApp) {
+    throw new Error("Failed to reload updated application.");
+  }
+
+  return updatedApp;
 }
 
-export function updateApplicationStatus(
-  id: string,
-  status: ApplicationStatus,
-  note?: string,
-): Application | undefined {
-  updateApplicationStatusAsync(id, status, note);
-  const apps = getApplicationsLocal();
-  return apps.find((a) => a.id === id);
-}
+// Backward-compatible alias
+export const updateApplicationStatusAsync = updateApplicationStatus;
 
-// Async add admin note in Supabase & localStorage
-export async function addAdminNoteAsync(
+/**
+ * Add an internal admin note in Supabase DB.
+ */
+export async function addAdminNote(
   id: string,
-  content: string,
-): Promise<Application | undefined> {
-  const apps = getApplicationsLocal();
-  const index = apps.findIndex((a) => a.id === id);
-  if (index < 0) return undefined;
-
+  content: string
+): Promise<AdminNote> {
   const noteId = crypto.randomUUID();
   const createdAt = new Date().toISOString();
 
-  const note: AdminNote = {
+  const { error } = await supabase.from("admin_notes").insert({
+    id: noteId,
+    application_id: id,
+    content,
+    created_at: createdAt,
+  });
+
+  if (error) {
+    console.error("Supabase add note error:", error.message);
+    throw new Error(error.message);
+  }
+
+  return {
     id: noteId,
     content,
     createdAt,
   };
-
-  apps[index] = {
-    ...apps[index],
-    adminNotes: [...apps[index].adminNotes, note],
-  };
-  localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(apps));
-
-  try {
-    await supabase.from("admin_notes").insert({
-      id: noteId,
-      application_id: id,
-      content,
-      created_at: createdAt,
-    });
-  } catch (err) {
-    console.error("Supabase add note error:", err);
-  }
-
-  return apps[index];
 }
 
-export function addAdminNote(
-  id: string,
-  content: string,
-): Application | undefined {
-  addAdminNoteAsync(id, content);
-  const apps = getApplicationsLocal();
-  return apps.find((a) => a.id === id);
-}
+// Backward-compatible alias
+export const addAdminNoteAsync = addAdminNote;
 
-export function getApplicationStats() {
-  const apps = getApplicationsLocal();
+/**
+ * Calculate application stats from live list.
+ */
+export function calculateStats(apps: Application[]): ApplicationStats {
   return {
     total: apps.length,
     pending: apps.filter((a) => a.status === "pending").length,

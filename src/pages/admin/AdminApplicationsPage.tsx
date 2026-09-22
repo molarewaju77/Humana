@@ -1,11 +1,12 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Filter, Eye, FileText, ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react'
-import { getApplications, fetchApplicationsFromSupabase } from '../../lib/storage'
+import { Search, Filter, Eye, FileText, ChevronLeft, ChevronRight, ChevronDown, X, RotateCw, Loader2 } from 'lucide-react'
+import { fetchApplications } from '../../lib/storage'
 import type { Application, ApplicationStatus } from '../../lib/types'
 import { formatDate, getStatusLabel } from '../../lib/utils'
 import StatusBadge from '../../components/ui/StatusBadge'
 import EmptyState from '../../components/ui/EmptyState'
+import { useToast } from '../../components/ui/Toast'
 
 const ALL_STATUSES: ApplicationStatus[] = [
   'pending', 'under_review', 'approved', 'rejected', 'closed',
@@ -14,16 +15,36 @@ const ALL_STATUSES: ApplicationStatus[] = [
 const PAGE_SIZE = 10
 
 export default function AdminApplicationsPage() {
-  const [allApps, setAllApps] = useState<Application[]>(() => getApplications())
+  const [allApps, setAllApps] = useState<Application[]>([])
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | 'all'>('all')
   const [page, setPage] = useState(1)
+  const { addToast } = useToast()
+
+  const loadData = useCallback(async (isManualRefresh = false) => {
+    if (isManualRefresh) {
+      setRefreshing(true)
+    } else {
+      setLoading(true)
+    }
+
+    try {
+      const apps = await fetchApplications()
+      setAllApps(apps)
+    } catch (err: any) {
+      console.error('Failed to load applications from Supabase:', err)
+      addToast('error', 'Failed to load applications', err?.message || 'Check your database connection.')
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }, [addToast])
 
   useEffect(() => {
-    fetchApplicationsFromSupabase().then((apps) => {
-      setAllApps(apps)
-    })
-  }, [])
+    loadData()
+  }, [loadData])
 
   const filtered = useMemo(() => {
     let apps = allApps
@@ -56,11 +77,23 @@ export default function AdminApplicationsPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold text-brand-deeptext">Applications</h1>
-        <p className="text-xs text-brand-secondarytext mt-1">
-          {filtered.length} {filtered.length === 1 ? 'application' : 'applications'} found
-        </p>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-brand-deeptext">Applications</h1>
+          <p className="text-xs text-brand-secondarytext mt-1">
+            {loading ? 'Loading applications…' : `${filtered.length} ${filtered.length === 1 ? 'application' : 'applications'} found`}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => loadData(true)}
+          disabled={loading || refreshing}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-border bg-white text-xs font-medium text-brand-deeptext hover:bg-brand-softbg transition-colors disabled:opacity-50"
+          title="Refresh Applications"
+        >
+          <RotateCw size={13} className={refreshing ? 'animate-spin text-primary' : ''} />
+          <span className="hidden sm:inline">Refresh</span>
+        </button>
       </div>
 
       {/* Refined Search & Filter Controls */}
@@ -108,7 +141,12 @@ export default function AdminApplicationsPage() {
 
       {/* Table / Cards */}
       <div className="bg-white rounded-2xl border border-brand-border overflow-hidden">
-        {paginated.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-20 text-brand-secondarytext gap-2">
+            <Loader2 size={20} className="animate-spin text-primary" />
+            <span className="text-sm">Loading applications from Supabase…</span>
+          </div>
+        ) : paginated.length === 0 ? (
           <EmptyState
             icon={<FileText size={24} />}
             title="No applications found"
@@ -221,7 +259,7 @@ export default function AdminApplicationsPage() {
         )}
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {!loading && totalPages > 1 && (
           <div className="flex items-center justify-between px-5 py-4 border-t border-brand-border">
             <p className="text-xs text-brand-secondarytext">
               Page {page} of {totalPages}
@@ -252,4 +290,3 @@ export default function AdminApplicationsPage() {
     </div>
   )
 }
-

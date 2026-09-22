@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://kppgbqefsvmzxvrcwyfs.supabase.co'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_mvTcpUBigYx7x6VIzAgu6g_rVVxcwzl'
+const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || 'https://kppgbqefsvmzxvrcwyfs.supabase.co').trim()
+const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_mvTcpUBigYx7x6VIzAgu6g_rVVxcwzl').trim()
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
@@ -12,7 +12,7 @@ export const BUCKET_NAME = 'application-files'
  */
 export async function uploadDocumentFile(file: File, folder: string = 'candidate-uploads'): Promise<string | null> {
   try {
-    const fileExt = file.name.split('.').pop()
+    const fileExt = file.name.split('.').pop() || 'dat'
     const cleanBaseName = file.name.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_')
     const fileName = `${folder}/${Date.now()}_${cleanBaseName}.${fileExt}`
 
@@ -24,7 +24,7 @@ export async function uploadDocumentFile(file: File, folder: string = 'candidate
       })
 
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Upload timeout (6s)')), 6000)
+      setTimeout(() => reject(new Error('Storage upload timeout (30s)')), 30000)
     )
 
     const { data, error } = (await Promise.race([uploadTask, timeoutPromise])) as any
