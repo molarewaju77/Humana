@@ -254,7 +254,10 @@ function getApplicationsLocal(): Application[] {
 }
 
 export function getApplications(): Application[] {
-  return getApplicationsLocal();
+  // Prefer the live Supabase applications table. This function is used mainly as a
+  // synchronous fallback during first render, so we intentionally avoid reusing stale
+  // cached local data that can contain old/mock records.
+  return [];
 }
 
 export function getApplicationById(id: string): Application | undefined {
