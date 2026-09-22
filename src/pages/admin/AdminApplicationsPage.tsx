@@ -1,11 +1,12 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Filter, Eye, FileText, ChevronLeft, ChevronRight, ChevronDown, X, RotateCw, Loader2 } from 'lucide-react'
-import { fetchApplications } from '../../lib/storage'
+import { Search, Filter, Eye, FileText, ChevronLeft, ChevronRight, ChevronDown, X, RotateCw } from 'lucide-react'
+import { fetchApplications, getCachedApplications } from '../../lib/storage'
 import type { Application, ApplicationStatus } from '../../lib/types'
 import { formatDate, getStatusLabel } from '../../lib/utils'
 import StatusBadge from '../../components/ui/StatusBadge'
 import EmptyState from '../../components/ui/EmptyState'
+import CircularLoader from '../../components/ui/CircularLoader'
 import { useToast } from '../../components/ui/Toast'
 
 const ALL_STATUSES: ApplicationStatus[] = [
@@ -15,8 +16,8 @@ const ALL_STATUSES: ApplicationStatus[] = [
 const PAGE_SIZE = 10
 
 export default function AdminApplicationsPage() {
-  const [allApps, setAllApps] = useState<Application[]>([])
-  const [loading, setLoading] = useState(true)
+  const [allApps, setAllApps] = useState<Application[]>(() => getCachedApplications())
+  const [loading, setLoading] = useState(() => getCachedApplications().length === 0)
   const [refreshing, setRefreshing] = useState(false)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | 'all'>('all')
@@ -26,12 +27,12 @@ export default function AdminApplicationsPage() {
   const loadData = useCallback(async (isManualRefresh = false) => {
     if (isManualRefresh) {
       setRefreshing(true)
-    } else {
+    } else if (allApps.length === 0) {
       setLoading(true)
     }
 
     try {
-      const apps = await fetchApplications()
+      const apps = await fetchApplications(isManualRefresh)
       setAllApps(apps)
     } catch (err: any) {
       console.error('Failed to load applications from Supabase:', err)
@@ -40,10 +41,10 @@ export default function AdminApplicationsPage() {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [addToast])
+  }, [addToast, allApps.length])
 
   useEffect(() => {
-    loadData()
+    loadData(false)
   }, [loadData])
 
   const filtered = useMemo(() => {
@@ -81,7 +82,9 @@ export default function AdminApplicationsPage() {
         <div>
           <h1 className="text-2xl font-bold text-brand-deeptext">Applications</h1>
           <p className="text-xs text-brand-secondarytext mt-1">
-            {loading ? 'Loading applications…' : `${filtered.length} ${filtered.length === 1 ? 'application' : 'applications'} found`}
+            {loading && allApps.length === 0
+              ? 'Fetching records…'
+              : `${filtered.length} ${filtered.length === 1 ? 'application' : 'applications'} found`}
           </p>
         </div>
         <button
@@ -139,13 +142,14 @@ export default function AdminApplicationsPage() {
         </div>
       </div>
 
-      {/* Table / Cards */}
+      {/* Table / Cards Container */}
       <div className="bg-white rounded-2xl border border-brand-border overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center py-20 text-brand-secondarytext gap-2">
-            <Loader2 size={20} className="animate-spin text-primary" />
-            <span className="text-sm">Loading applications from Supabase…</span>
-          </div>
+        {loading && allApps.length === 0 ? (
+          <CircularLoader
+            size="lg"
+            label="Loading Applications"
+            sublabel="Fetching candidate records..."
+          />
         ) : paginated.length === 0 ? (
           <EmptyState
             icon={<FileText size={24} />}

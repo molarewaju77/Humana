@@ -22,12 +22,13 @@ import {
   CheckCircle,
   FileCheck,
 } from 'lucide-react'
-import { fetchApplicationById, updateApplicationStatus, addAdminNote } from '../../lib/storage'
+import { fetchApplicationById, updateApplicationStatus, addAdminNote, getCachedApplications } from '../../lib/storage'
 import { supabase, BUCKET_NAME } from '../../lib/supabase'
 import type { Application, ApplicationStatus } from '../../lib/types'
 import { formatDateTime, getStatusLabel } from '../../lib/utils'
 import StatusBadge from '../../components/ui/StatusBadge'
 import Button from '../../components/ui/Button'
+import CircularLoader from '../../components/ui/CircularLoader'
 import { useToast } from '../../components/ui/Toast'
 
 const ALL_STATUSES: ApplicationStatus[] = [
@@ -58,9 +59,11 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
   )
 }
 
-function DocumentRow({ label, url, icon: Icon }: { label: string; url: string; icon: any }) {
+function DocumentRow({ label, url, icon: Icon }: { label: string; url?: string | null; icon: any }) {
   const [downloading, setDownloading] = useState(false)
   const { addToast } = useToast()
+
+  if (!url || typeof url !== 'string') return null
 
   const isDataUrl = url.startsWith('data:')
   const isHttpUrl = url.startsWith('http://') || url.startsWith('https://')
@@ -221,26 +224,48 @@ export default function AdminApplicationDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { addToast } = useToast()
 
-  const [app, setApp] = useState<Application | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [app, setApp] = useState<Application | null>(() => {
+    if (!id) return null
+    return getCachedApplications().find((a) => a.id === id || a.referenceNumber === id) || null
+  })
+  const [loading, setLoading] = useState<boolean>(() => {
+    if (!id) return false
+    return !getCachedApplications().some((a) => a.id === id || a.referenceNumber === id)
+  })
   const [newNote, setNewNote] = useState('')
   const [savingNote, setSavingNote] = useState(false)
   const [updatingStatus, setUpdatingStatus] = useState(false)
-  const [selectedStatus, setSelectedStatus] = useState<ApplicationStatus | ''>('')
+  const [selectedStatus, setSelectedStatus] = useState<ApplicationStatus | ''>(() => {
+    const cached = id ? getCachedApplications().find((a) => a.id === id || a.referenceNumber === id) : null
+    return cached?.status || ''
+  })
 
   useEffect(() => {
     if (!id) return
-    setLoading(true)
+
+    // Check if we have cached data first for instant display
+    const cached = getCachedApplications().find((a) => a.id === id || a.referenceNumber === id)
+    if (cached) {
+      setApp(cached)
+      setSelectedStatus(cached.status)
+      setLoading(false)
+    } else {
+      setLoading(true)
+    }
+
+    // Always fetch live application from Supabase
     fetchApplicationById(id)
       .then((data) => {
-        setApp(data)
         if (data) {
+          setApp(data)
           setSelectedStatus(data.status)
         }
       })
       .catch((err: any) => {
         console.error('Failed to load application from Supabase:', err)
-        addToast('error', 'Failed to load application', err?.message || 'Check database connection')
+        if (!cached) {
+          addToast('error', 'Failed to load application', err?.message || 'Check database connection')
+        }
       })
       .finally(() => {
         setLoading(false)
@@ -267,7 +292,7 @@ export default function AdminApplicationDetailPage() {
     setSavingNote(true)
     try {
       const createdNote = await addAdminNote(app.id, newNote.trim())
-      setApp((prev) => (prev ? { ...prev, adminNotes: [...prev.adminNotes, createdNote] } : prev))
+      setApp((prev) => (prev ? { ...prev, adminNotes: [...(prev.adminNotes || []), createdNote] } : prev))
       setNewNote('')
       addToast('success', 'Note added', 'Internal recruiter note saved to Supabase.')
     } catch (err: any) {
@@ -278,11 +303,14 @@ export default function AdminApplicationDetailPage() {
     }
   }
 
-  if (loading) {
+  if (loading && !app) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
-        <Loader2 size={24} className="animate-spin text-primary" />
-        <p className="text-sm font-medium text-brand-deeptext">Loading application from Supabase…</p>
+      <div className="bg-white rounded-2xl border border-brand-border p-12">
+        <CircularLoader
+          size="lg"
+          label="Loading Application"
+          sublabel="Fetching candidate record details..."
+        />
       </div>
     )
   }
@@ -299,8 +327,18 @@ export default function AdminApplicationDetailPage() {
     )
   }
 
-  const { personalInfo: pi, employmentHistory: eh, experience: ex, workPreferences: wp, additionalInfo: ai } = app
-  const fullName = `${pi.firstName} ${pi.lastName}`
+  const pi = app.personalInfo || ({} as any)
+  const eh = app.employmentHistory || ({} as any)
+  const ex = app.experience || ({} as any)
+  const wp = app.workPreferences || ({} as any)
+  const ai = app.additionalInfo || ({} as any)
+  const historyList = app.statusHistory || []
+  const notesList = app.adminNotes || []
+
+  const firstName = pi.firstName || ''
+  const lastName = pi.lastName || ''
+  const fullName = `${firstName} ${lastName}`.trim() || 'Applicant'
+  const initials = `${(firstName[0] || '')}${(lastName[0] || '')}`.toUpperCase() || 'AP'
   const fullAddress = [pi.address, pi.city, pi.state, pi.zipCode, pi.country].filter(Boolean).join(', ')
 
   return (
@@ -320,7 +358,7 @@ export default function AdminApplicationDetailPage() {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0 flex-1">
               <div className="size-10 sm:size-11 rounded-xl bg-primary/10 text-primary font-semibold text-sm sm:text-base flex items-center justify-center shrink-0">
-                {pi.firstName[0]}{pi.lastName[0]}
+                {initials}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5 flex-wrap">
@@ -515,11 +553,11 @@ export default function AdminApplicationDetailPage() {
               <h2 className="text-xs font-semibold uppercase tracking-wider text-brand-deeptext">Application History</h2>
             </div>
             <ol className="space-y-2.5">
-              {app.statusHistory.map((entry, i) => (
+              {historyList.map((entry, i) => (
                 <li key={i} className="flex gap-2.5">
                   <div className="flex flex-col items-center">
                     <div className="size-1.5 rounded-full bg-primary mt-1 shrink-0" />
-                    {i < app.statusHistory.length - 1 && (
+                    {i < historyList.length - 1 && (
                       <div className="w-0.5 bg-brand-border/60 flex-1 mt-1" />
                     )}
                   </div>
@@ -547,11 +585,11 @@ export default function AdminApplicationDetailPage() {
               Private recruiter notes (saved directly to Supabase).
             </p>
 
-            {app.adminNotes.length === 0 ? (
+            {notesList.length === 0 ? (
               <p className="text-xs text-brand-secondarytext italic py-1.5">No notes added yet.</p>
             ) : (
               <ul className="space-y-2 mb-3">
-                {app.adminNotes.map((note) => (
+                {notesList.map((note) => (
                   <li key={note.id} className="rounded-lg bg-brand-softbg/70 border border-brand-border/60 p-2.5">
                     <p className="text-xs text-brand-deeptext leading-relaxed font-normal flex items-start justify-between gap-2">
                       <span>{note.content}</span>

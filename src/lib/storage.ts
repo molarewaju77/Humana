@@ -15,6 +15,70 @@ export interface ApplicationStats {
   closed: number;
 }
 
+// In-Memory & Session Cache Store
+const CACHE_KEY = "humana_apps_cache_v1";
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes cache lifetime
+
+interface CachePayload {
+  timestamp: number;
+  data: Application[];
+}
+
+let memoryCache: CachePayload | null = null;
+
+function loadSessionCache(): Application[] | null {
+  try {
+    if (memoryCache && Date.now() - memoryCache.timestamp < CACHE_TTL_MS) {
+      return memoryCache.data;
+    }
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed: CachePayload = JSON.parse(raw);
+    if (Date.now() - parsed.timestamp < CACHE_TTL_MS) {
+      memoryCache = parsed;
+      return parsed.data;
+    }
+    sessionStorage.removeItem(CACHE_KEY);
+    memoryCache = null;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function saveCache(apps: Application[]) {
+  const payload: CachePayload = {
+    timestamp: Date.now(),
+    data: apps,
+  };
+  memoryCache = payload;
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify(payload));
+  } catch {
+    // ignore sessionStorage quota errors
+  }
+}
+
+/**
+ * Returns cached applications synchronously if available and not expired.
+ * Useful for instant component initialization (0ms delay).
+ */
+export function getCachedApplications(): Application[] {
+  return loadSessionCache() || [];
+}
+
+/**
+ * Invalidate the in-memory and session cache.
+ */
+export function invalidateApplicationsCache() {
+  memoryCache = null;
+  try {
+    sessionStorage.removeItem(CACHE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 // Map DB row to Application object
 function mapRowToApplication(
   row: any,
@@ -176,9 +240,20 @@ function mapApplicationToRow(app: Application) {
 }
 
 /**
- * Fetch all applications directly from Supabase DB, including status history and admin notes.
+ * Fetch all applications with caching support.
+ * @param forceRefresh Set to true to bypass cache and query Supabase directly.
  */
-export async function fetchApplications(): Promise<Application[]> {
+export async function fetchApplications(
+  forceRefresh: boolean = false
+): Promise<Application[]> {
+  // If not forcing refresh, check cache first
+  if (!forceRefresh) {
+    const cached = loadSessionCache();
+    if (cached && cached.length > 0) {
+      return cached;
+    }
+  }
+
   try {
     const { data: appRows, error: appError } = await supabase
       .from("applications")
@@ -191,6 +266,7 @@ export async function fetchApplications(): Promise<Application[]> {
     }
 
     if (!appRows || appRows.length === 0) {
+      saveCache([]);
       return [];
     }
 
@@ -228,7 +304,7 @@ export async function fetchApplications(): Promise<Application[]> {
       }
     }
 
-    return appRows.map((row) => {
+    const applications = appRows.map((row) => {
       const history: StatusHistoryEntry[] = statusHistoryRows
         .filter((sh) => sh.application_id === row.id)
         .map((sh) => ({
@@ -247,6 +323,9 @@ export async function fetchApplications(): Promise<Application[]> {
 
       return mapRowToApplication(row, history, notes);
     });
+
+    saveCache(applications);
+    return applications;
   } catch (err: any) {
     console.error("Failed to fetch from Supabase:", err);
     throw new Error(
@@ -259,11 +338,23 @@ export async function fetchApplications(): Promise<Application[]> {
 export const fetchApplicationsFromSupabase = fetchApplications;
 
 /**
- * Fetch a single application by its UUID or reference number from Supabase DB.
+ * Fetch a single application by its UUID or reference number.
+ * First checks cache; if not found or forced, queries Supabase directly.
  */
 export async function fetchApplicationById(
-  id: string
+  id: string,
+  forceRefresh: boolean = false
 ): Promise<Application | null> {
+  if (!forceRefresh) {
+    const cached = loadSessionCache();
+    if (cached) {
+      const found = cached.find(
+        (a) => a.id === id || a.referenceNumber === id
+      );
+      if (found) return found;
+    }
+  }
+
   try {
     const isUUID =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
@@ -274,7 +365,7 @@ export async function fetchApplicationById(
     if (isUUID) {
       query = query.eq("id", id);
     } else {
-      query = query.or(`id.eq.${id},reference_number.eq.${id}`);
+      query = query.eq("reference_number", id);
     }
 
     const { data: appRow, error: appError } = await query.maybeSingle();
@@ -314,7 +405,21 @@ export async function fetchApplicationById(
       createdAt: an.created_at,
     }));
 
-    return mapRowToApplication(appRow, history, notes);
+    const app = mapRowToApplication(appRow, history, notes);
+
+    // Update the app inside the session cache if present
+    const cached = loadSessionCache();
+    if (cached) {
+      const index = cached.findIndex((a) => a.id === app.id);
+      if (index >= 0) {
+        cached[index] = app;
+      } else {
+        cached.unshift(app);
+      }
+      saveCache(cached);
+    }
+
+    return app;
   } catch (err: any) {
     console.error("Failed to fetch application by ID:", err);
     throw err;
@@ -322,7 +427,7 @@ export async function fetchApplicationById(
 }
 
 /**
- * Save a new application directly to Supabase DB.
+ * Save a new application directly to Supabase and add it to cache.
  */
 export async function saveApplication(app: Application): Promise<void> {
   try {
@@ -350,6 +455,16 @@ export async function saveApplication(app: Application): Promise<void> {
         console.warn("Supabase initial status history insert warning:", shError.message);
       }
     }
+
+    // Prepend to cached applications
+    const cached = loadSessionCache() || [];
+    const index = cached.findIndex((a) => a.id === app.id);
+    if (index >= 0) {
+      cached[index] = app;
+    } else {
+      cached.unshift(app);
+    }
+    saveCache(cached);
   } catch (err: any) {
     console.error("Supabase save application exception:", err);
     throw err;
@@ -360,7 +475,7 @@ export async function saveApplication(app: Application): Promise<void> {
 export const saveApplicationAsync = saveApplication;
 
 /**
- * Update an application status in Supabase DB and add a status history record.
+ * Update an application status in Supabase DB and update the cache.
  */
 export async function updateApplicationStatus(
   id: string,
@@ -390,7 +505,7 @@ export async function updateApplicationStatus(
     console.warn("Supabase status history insert warning:", historyError.message);
   }
 
-  const updatedApp = await fetchApplicationById(id);
+  const updatedApp = await fetchApplicationById(id, true);
   if (!updatedApp) {
     throw new Error("Failed to reload updated application.");
   }
@@ -402,7 +517,7 @@ export async function updateApplicationStatus(
 export const updateApplicationStatusAsync = updateApplicationStatus;
 
 /**
- * Add an internal admin note in Supabase DB.
+ * Add an internal admin note in Supabase DB and update the cache.
  */
 export async function addAdminNote(
   id: string,
@@ -423,18 +538,30 @@ export async function addAdminNote(
     throw new Error(error.message);
   }
 
-  return {
+  const newNote: AdminNote = {
     id: noteId,
     content,
     createdAt,
   };
+
+  // Update cached application note list
+  const cached = loadSessionCache();
+  if (cached) {
+    const targetApp = cached.find((a) => a.id === id);
+    if (targetApp) {
+      targetApp.adminNotes = [...targetApp.adminNotes, newNote];
+      saveCache(cached);
+    }
+  }
+
+  return newNote;
 }
 
 // Backward-compatible alias
 export const addAdminNoteAsync = addAdminNote;
 
 /**
- * Calculate application stats from live list.
+ * Calculate application stats from application list.
  */
 export function calculateStats(apps: Application[]): ApplicationStats {
   return {

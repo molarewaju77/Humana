@@ -1,5 +1,6 @@
 import { useLocation, Link, useParams } from 'react-router-dom'
 import { ChevronRight, Home } from 'lucide-react'
+import { getCachedApplications } from '../../lib/storage'
 
 export default function AdminBreadcrumbs() {
   const { pathname } = useLocation()
@@ -17,7 +18,9 @@ export default function AdminBreadcrumbs() {
     items.push({ label: 'Applications', href: '/admin/applications' })
 
     if (id) {
-      items.push({ label: `App #${id.slice(0, 8)}` })
+      const cached = getCachedApplications().find((a) => a.id === id || a.referenceNumber === id)
+      const label = cached ? cached.referenceNumber : `App #${id.slice(0, 8)}`
+      items.push({ label })
     }
   }
 

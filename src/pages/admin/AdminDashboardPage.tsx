@@ -9,30 +9,34 @@ import {
   XCircle,
   ArrowRight,
   RotateCw,
-  Loader2,
 } from "lucide-react";
-import { fetchApplications, calculateStats } from "../../lib/storage";
+import {
+  fetchApplications,
+  getCachedApplications,
+  calculateStats,
+} from "../../lib/storage";
 import type { Application } from "../../lib/types";
 import { formatDate } from "../../lib/utils";
 import StatusBadge from "../../components/ui/StatusBadge";
 import EmptyState from "../../components/ui/EmptyState";
+import CircularLoader from "../../components/ui/CircularLoader";
 import { useToast } from "../../components/ui/Toast";
 
 export default function AdminDashboardPage() {
-  const [apps, setApps] = useState<Application[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [apps, setApps] = useState<Application[]>(() => getCachedApplications());
+  const [loading, setLoading] = useState<boolean>(() => getCachedApplications().length === 0);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   const { addToast } = useToast();
 
-  const loadData = useCallback(async (isManualRefresh = false) => {
-    if (isManualRefresh) {
+  const loadData = useCallback(async (forceRefresh = false) => {
+    if (forceRefresh) {
       setRefreshing(true);
-    } else {
+    } else if (apps.length === 0) {
       setLoading(true);
     }
 
     try {
-      const data = await fetchApplications();
+      const data = await fetchApplications(forceRefresh);
       setApps(data);
     } catch (error: any) {
       console.error("Dashboard fetch applications failed:", error);
@@ -45,10 +49,11 @@ export default function AdminDashboardPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [addToast]);
+  }, [addToast, apps.length]);
 
   useEffect(() => {
-    loadData();
+    // If we have cached apps, revalidate in background silently; otherwise fetch
+    loadData(false);
   }, [loadData]);
 
   const stats = useMemo(() => calculateStats(apps), [apps]);
@@ -100,7 +105,7 @@ export default function AdminDashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-brand-deeptext">Dashboard</h1>
           <p className="text-sm text-brand-secondarytext mt-1">
-            Overview of all recruitment activity from Supabase
+            Overview of all recruitment activity
           </p>
         </div>
         <button
@@ -108,7 +113,7 @@ export default function AdminDashboardPage() {
           onClick={() => loadData(true)}
           disabled={loading || refreshing}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-border bg-white text-xs font-medium text-brand-deeptext hover:bg-brand-softbg transition-colors disabled:opacity-50"
-          title="Refresh Data"
+          title="Refresh Data from Supabase"
         >
           <RotateCw size={13} className={refreshing ? "animate-spin text-primary" : ""} />
           <span className="hidden sm:inline">Refresh</span>
@@ -128,7 +133,7 @@ export default function AdminDashboardPage() {
               <Icon size={18} />
             </div>
             <p className="text-2xl font-bold text-brand-deeptext tabular-nums">
-              {loading ? "—" : value}
+              {loading && apps.length === 0 ? "—" : value}
             </p>
             <p className="text-xs text-brand-secondarytext mt-1 leading-tight">
               {label}
@@ -151,11 +156,12 @@ export default function AdminDashboardPage() {
           </Link>
         </div>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-16 text-brand-secondarytext gap-2">
-            <Loader2 size={20} className="animate-spin text-primary" />
-            <span className="text-sm">Loading applications from Supabase…</span>
-          </div>
+        {loading && apps.length === 0 ? (
+          <CircularLoader
+            size="lg"
+            label="Loading Dashboard"
+            sublabel="Preparing recruitment overview..."
+          />
         ) : recentApps.length === 0 ? (
           <EmptyState
             icon={<FileText size={24} />}
