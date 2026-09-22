@@ -176,12 +176,13 @@ export async function fetchApplicationsFromSupabase(): Promise<Application[]> {
       .select("*")
       .order("submitted_at", { ascending: false });
 
-    if (appError || !appRows) {
-      console.warn(
-        "Supabase fetch applications error/fallback:",
-        appError?.message,
-      );
-      return getApplicationsLocal();
+    if (appError) {
+      console.error("Supabase fetch applications error:", appError.message);
+      throw new Error(appError.message);
+    }
+
+    if (!appRows) {
+      return [];
     }
 
     const appIds = appRows.map((r) => r.id);
@@ -231,9 +232,11 @@ export async function fetchApplicationsFromSupabase(): Promise<Application[]> {
     // Cache locally
     localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(apps));
     return apps;
-  } catch (err) {
+  } catch (err: any) {
     console.error("Failed to fetch from Supabase:", err);
-    return getApplicationsLocal();
+    throw new Error(
+      err?.message || "Failed to load applications from Supabase.",
+    );
   }
 }
 
